@@ -1,0 +1,71 @@
+{
+  "evidence_type": "EVO成功页面截图转录",
+  "platform": "EVO",
+  "project": "E6策略生命周期控制研究",
+  "status": "success_visible",
+  "observed_at_from_output_path": "2026-11-12 18:00（由截图中的输出目录名推断，时区未显示）",
+  "platform_run_id": null,
+  "steps_completed": 8,
+  "step_chain": [
+    "测试",
+    "研究主流程",
+    "行情诊断",
+    "扩展验证",
+    "E6校验",
+    "HTML报告",
+    "验收"
+  ],
+  "output_file_count": 45,
+  "acceptance": "15/15项通过",
+  "output_directory": "reports/20261112-1800-第三次运行：修复q8_engine_v2.py和/",
+  "visible_attachments": [
+    "run_e6.py",
+    "q8_engine_v2.py"
+  ],
+  "visible_metrics": {
+    "always_on": {
+      "total_return": "23.65%",
+      "avg_exposure": "100.00%",
+      "worst_drawdown": "-26.82%",
+      "summer_mean": "0.69",
+      "inactive_share": "0.00%",
+      "delta_vs_always_on": "—"
+    },
+    "simple_threshold": {
+      "total_return": "16.57%",
+      "avg_exposure": "57.95%",
+      "worst_drawdown": "-24.85%",
+      "summer_mean": "0.72",
+      "inactive_share": "42.05%",
+      "delta_vs_always_on": "-7.07pp"
+    },
+    "lifecycle": {
+      "total_return": "15.14%",
+      "avg_exposure": "46.59%",
+      "worst_drawdown": "-19.65%",
+      "summer_mean": "0.80",
+      "inactive_share": "57.95%",
+      "delta_vs_always_on": "-8.50pp"
+    },
+    "health_gate_sensitivity": {
+      "total_return": "17.10%",
+      "avg_exposure": "27.27%",
+      "worst_drawdown": "-5.69%",
+      "summer_mean": "1.18",
+      "inactive_share": "75.00%",
+      "delta_vs_always_on": "-6.55pp"
+    }
+  },
+  "visible_findings": [
+    "生命周期规则降低暴露和回撤，但没有提高累计净收益。",
+    "退役标签未改变交易路径，属于治理状态而非独立交易增量。",
+    "多头停用机会成本为1.48，避免损失为1.04，净机会成本为0.38。",
+    "对冲表达中所有方案均为负收益；健康门槛相对持续启用改善3.38个百分点，但自身仍为负收益。"
+  ],
+  "source_screenshot": "references/evo-evidence/20261112-evo-success.png",
+  "evidence_limitations": [
+    "截图未显示独立平台运行编号。",
+    "截图只显示页面摘要，未包含完整控制台原文、输入指纹和输出文件哈希。",
+    "运行成功状态和结果摘要以截图可见内容为准；完整平台回执仍应从EVO导出后补充。"
+  ]
+}

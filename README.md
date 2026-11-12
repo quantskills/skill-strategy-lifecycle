@@ -147,6 +147,12 @@ https://github.com/quantskills/skill-strategy-lifecycle
 
 EVO 的真实回执至少应包含：平台运行编号、项目版本、输入清单及指纹、原始输出、结果文件清单、结果散列和成功状态。仅上传或下载一个 HTML/CSV 文件，不能证明研究已经从 EVO 真实入口运行。当前仓库没有把未完成的 EVO 回执写成成功记录；在获得真实回执前，本 README 中的数值只能称为项目侧回顾性结果。
 
+## EVO 成功运行证据
+
+用户提供的 EVO 页面截图显示，E6 策略生命周期控制研究已经完成 8 个步骤，45 个输出文件，验收 15/15 项通过。截图中的输出目录为 `reports/20261112-1800-第三次运行：修复q8_engine_v2.py和/`，并显示了持续启用、简单阈值、生命周期规则和健康门槛敏感性的多头对照结果。
+
+证据原件和逐项转录见 [EVO 运行证据](references/evo-evidence/README.md)，结构化记录见 [platform_evidence.json](references/evo-evidence/platform_evidence.json)。这份记录只确认截图可见内容；截图没有显示独立平台运行编号、完整控制台原文、输入指纹和输出文件哈希，待从 EVO 导出完整回执后再补齐这些字段。
+
 ## 输入合同
 
 ## E6 与 Q8 的解耦边界
