@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import gzip
+import lzma
 import os
 from pathlib import Path
 
@@ -31,12 +33,36 @@ def sha256(path: Path) -> str:
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def resolve_input(name: str) -> Path:
+    """Find an input in plain, gzip or xz form without changing its logical name."""
+    plain = Q8 / name
+    if plain.is_file():
+        return plain
+    for suffix in ('.xz', '.gz'):
+        packed = Q8 / (name + suffix)
+        if packed.is_file():
+            return packed
+    return plain
+
+
+def input_sha256(path: Path) -> str:
+    """Hash logical file bytes so compressed delivery equals the frozen CSV hash."""
+    if path.suffix not in {'.xz', '.gz'}:
+        return sha256(path)
+    opener = lzma.open if path.suffix == '.xz' else gzip.open
+    digest = hashlib.sha256()
+    with opener(path, 'rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def validate_inputs() -> dict:
-    missing = [name for name in REQUIRED_Q8 if not (Q8 / name).is_file()]
+    missing = [name for name in REQUIRED_Q8 if not resolve_input(name).is_file()]
     if missing:
         raise FileNotFoundError('缺少冻结 Q8 输入：' + ', '.join(missing) + '; 请设置 E6_Q8_ROOT')
     manifest = json.loads((ROOT / 'frozen_inputs.json').read_text(encoding='utf-8'))
-    actual = {name: sha256(Q8 / name) for name in REQUIRED_Q8}
+    actual = {name: input_sha256(resolve_input(name)) for name in REQUIRED_Q8}
     changed = [name for name in REQUIRED_Q8 if actual[name] != manifest['sha256'][name]]
     if changed:
         raise ValueError('冻结输入指纹不匹配，停止运行：' + ', '.join(changed))

@@ -22,6 +22,17 @@ CFG = json.loads(CFG_PATH.read_text(encoding="utf-8"))
 OUT.mkdir(parents=True, exist_ok=True)
 
 
+def data_file(name):
+    path = DATA / name
+    if path.is_file():
+        return path
+    for suffix in (".xz", ".gz"):
+        packed = DATA / (name + suffix)
+        if packed.is_file():
+            return packed
+    return path
+
+
 def sha(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -62,9 +73,9 @@ def recorded_cli(cmd, directory, metadata):
 
 def load_cache():
     factors = json.loads((DATA / "upstream_summary.json").read_text(encoding="utf-8"))["factors"]["selected_names"]
-    weekly = pd.read_csv(DATA / "weekly_slim.csv", dtype={"date": str, "symbol": str,
+    weekly = pd.read_csv(data_file("weekly_slim.csv"), dtype={"date": str, "symbol": str,
         "in_universe": "boolean", "entry_tradable": "boolean"}, low_memory=False)
-    raw = pd.read_csv(DATA / "panel_for_platform.csv", dtype={"date": str, "symbol": str})
+    raw = pd.read_csv(data_file("panel_for_platform.csv"), dtype={"date": str, "symbol": str})
     assert not weekly.duplicated(["date", "symbol"]).any()
     assert not raw.duplicated(["date", "symbol"]).any()
     raw = raw.drop(columns="fwd_ret").merge(weekly, on=["date", "symbol"], validate="one_to_one")

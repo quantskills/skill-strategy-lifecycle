@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import lzma
 import shutil
 from pathlib import Path
 
 from project_config import ROOT, Q8, REQUIRED_Q8, sha256, validate_inputs
 
 
-def build(destination: Path, include_results: bool = False):
+def build(destination: Path, include_results: bool = False, compress_large: bool = False):
     validate_inputs()
     destination=destination.resolve()
     if destination.exists():raise FileExistsError('不覆盖已有交付目录：'+str(destination))
@@ -25,7 +26,13 @@ def build(destination: Path, include_results: bool = False):
     for name in REQUIRED_Q8:
         target=destination/'frozen_q8'/name
         target.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copy2(Q8/name,target)
+        source=Q8/name
+        if compress_large and name in {'data/weekly_slim.csv','data/panel_for_platform.csv'}:
+            target=target.with_suffix(target.suffix + '.xz')
+            with source.open('rb') as stream, lzma.open(target,'wb',preset=9) as packed:
+                shutil.copyfileobj(stream, packed, length=1024*1024)
+        else:
+            shutil.copy2(source,target)
     if include_results:
         shutil.copytree(ROOT/'results',destination/'results',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
         if (ROOT/'runs/compatibility').exists():
@@ -42,5 +49,5 @@ def build(destination: Path, include_results: bool = False):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--destination',required=True,type=Path)
-    parser.add_argument('--include-results',action='store_true')
-    args=parser.parse_args();build(args.destination,args.include_results)
+    parser.add_argument('--include-results',action='store_true');parser.add_argument('--compress-large',action='store_true',help='将两个大CSV以xz保存，入口会按原始CSV内容校验哈希')
+    args=parser.parse_args();build(args.destination,args.include_results,args.compress_large)

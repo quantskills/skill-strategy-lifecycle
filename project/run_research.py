@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from state_machine import LifecycleParams, replay_lifecycle
-from project_config import Q8, RESULTS, load_q8, validate_inputs
+from project_config import Q8, RESULTS, load_q8, validate_inputs, resolve_input, input_sha256
 from inference import paired_inference
 
 
@@ -287,8 +287,8 @@ def main():
         "q8_monitor_sha256": sha(Q8 / "results" / "v2" / "monitor.csv"),
         "q8_calibration_sha256": sha(Q8 / "results" / "v2" / "calibration.json"),
         "q8_score_source": "data/weekly_slim.csv::score_wf (archived walk-forward Ridge scores)",
-        "q8_weekly_slim_sha256": sha(Q8 / "data" / "weekly_slim.csv"),
-        "q8_panel_sha256": sha(Q8 / "data" / "panel_for_platform.csv"),
+        "q8_weekly_slim_sha256": input_sha256(resolve_input("data/weekly_slim.csv")),
+        "q8_panel_sha256": input_sha256(resolve_input("data/panel_for_platform.csv")),
         "q8_upstream_summary_sha256": sha(Q8 / "data" / "upstream_summary.json"),
         "retrained": False,
         "point_in_time_state_replay": True,
