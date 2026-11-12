@@ -91,6 +91,7 @@ Q8 负责因子、模型和模型重训；E6 读取冻结的 Q8 输入，研究�
 项目级运行入口是：
 
 ```text
+cd project
 python evo_entry.py
 ```
 
@@ -100,7 +101,7 @@ python evo_entry.py
 
 ## 输入合同
 
-私有 Q8 数据和平台凭据不提交到仓库。运行环境需要提供以下冻结输入，并由 `frozen_inputs.json` 校验散列：
+私有 Q8 数据和平台凭据不提交到仓库。运行环境需要提供以下冻结输入，并由 `project/frozen_inputs.json` 校验散列，以下路径以 `project/` 为根目录：
 
 ```text
 frozen_q8/scripts/engine_v2.py
@@ -119,7 +120,7 @@ frozen_q8/results/v2/health_robustness.json
 
 ## 输出文件
 
-运行后主要输出包括：
+运行后主要输出位于 `project/` 目录下，包括：
 
 - `results/summary.csv`：持续启用、简单阈值、生命周期规则和敏感性方案的净收益、暴露、回撤与成本；
 - `results/state_ledger.csv`：逐期状态、暴露、转换原因、告警和收益账本；
@@ -138,21 +139,25 @@ frozen_q8/results/v2/health_robustness.json
 ```text
 .
 ├── SKILL.md                         # QuantSkills v2 技能声明
-├── agents/                          # Cursor、Hermes、OpenClaw 适配入口
-├── references/                      # 输入、来源和平台证据边界
-├── evo_entry.py                     # EVO/项目级统一入口
-├── run_all.py                       # 全流程编排
-├── run_research.py                  # 生命周期研究主流程
-├── state_machine.py                 # 状态机重放
-├── inference.py                     # 配对区块推断
-├── scripts/regime_strategy_analysis.py # 三个技能的集成适配
-├── tests/                           # 状态边界和统计反例测试
-├── analysis_plan.json               # 回顾性扩展计划
-├── project_config.json              # 路径和结果配置
-└── frozen_inputs.json               # Q8 输入指纹清单
+├── README.md                        # 项目说明
+├── LICENSE                          # 许可证
+├── agents/                          # 各运行时适配入口
+├── references/                      # 输入、来源和平台证据说明
+└── project/                         # 研究实现与配置
+    ├── evo_entry.py                 # 项目统一入口
+    ├── run_all.py                   # 全流程编排
+    ├── run_research.py              # 生命周期研究主流程
+    ├── state_machine.py             # 状态机重放
+    ├── inference.py                 # 配对区块推断
+    ├── scripts/                     # 行情与策略诊断集成
+    ├── tests/                       # 状态边界和统计测试
+    ├── .agents/skills/              # 三个内置技能
+    ├── analysis_plan.json           # 回顾性扩展计划
+    ├── project_config.json          # 路径和结果配置
+    └── frozen_inputs.json           # Q8 输入指纹清单
 ```
 
-三个内置技能位于 `.agents/skills/`：
+三个内置技能位于 `project/.agents/skills/`：
 
 - `skill-factor-health-monitor`：因子健康度、滚动 IC、CUSUM 和降权建议；
 - `agent-market-regime-monitor`：市场状态观察框架；

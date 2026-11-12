@@ -5,7 +5,7 @@
 - 项目版本或提交号；
 - 平台运行编号；
 - 输入文件清单和 SHA256；
-- `python evo_entry.py` 的原始控制台输出；
+- 在 `project/` 中执行 `python evo_entry.py` 的原始控制台输出；
 - `runs/evo/input.json` 与 `runs/evo/output.json`；
 - `results/` 输出文件清单和散列；
 - 平台显示的成功或失败状态。

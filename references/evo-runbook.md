@@ -1,6 +1,6 @@
 # EVO 运行说明
 
-E6 设计为通过 `python evo_entry.py` 执行。执行前须在运行环境中提供受授权的冻结 Q8 输入，并按照 `project_config.json` 设置路径；`frozen_inputs.json` 用于校验输入指纹。仓库不包含这些数据。
+E6 设计为进入 `project/` 后通过 `python evo_entry.py` 执行。执行前须在运行环境中提供受授权的冻结 Q8 输入，并按照 `project_config.json` 设置路径；`frozen_inputs.json` 用于校验输入指纹。仓库不包含这些数据。
 
 研究流程完成后产生收益对照、机会成本、状态账本、中文报告及项目侧输入输出记录。平台执行证据应另行保存平台运行编号、状态、控制台原文、项目版本和输入输出散列，详见 `references/platform-run.md`。
 

@@ -38,7 +38,7 @@ quantSkills:
 
 ## 入口
 
-项目入口为 `evo_entry.py`，主流程为 `run_all.py`。在支持项目级运行任务的平台中，从项目版本执行入口；平台应保存运行编号、输入清单、原始控制台输出和结果文件散列。
+项目入口为 `project/evo_entry.py`，主流程为 `project/run_all.py`。进入 `project/` 后执行 `python evo_entry.py`。在支持项目级运行任务的平台中，从项目版本执行入口；平台应保存运行编号、输入清单、原始控制台输出和结果文件散列。
 
 本技能与 Q8 的分工是：Q8 负责因子、模型和重训；本技能只读取冻结 Q8 输入，研究策略生命周期规则。
 
@@ -66,7 +66,7 @@ quantSkills:
 - [来源与数据边界](references/source-boundary.md)
 
 
-数据来源、输入假设、参数限制和风险边界见 eferences/input-contract.md 与 eferences/source-boundary.md。结果仅供研究和教育使用，不构成投资建议，也不承诺收益。
+数据来源、输入假设、参数限制和风险边界见 [输入合同](references/input-contract.md) 与 [来源边界](references/source-boundary.md)。结果仅供研究和教育使用，不构成投资建议，也不承诺收益。
 
 
 
