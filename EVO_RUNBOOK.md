@@ -1,9 +1,7 @@
 # EVO 运行说明
 
-本项目可以从 EVO 运行。安装 `requirements.txt` 所列依赖后执行 `evo_entry.py`，即可生成策略汇总、状态账本、状态转换、机会成本、验证记录和中文 HTML。
+E6 设计为通过 `python evo_entry.py` 执行。执行前须在运行环境中提供受授权的冻结 Q8 输入，并按照 `project_config.json` 设置路径；`frozen_inputs.json` 用于校验输入指纹。仓库不包含这些数据。
 
-EVO 只作为运行环境；研究逻辑、参数和数据口径均保存在本项目中。冻结Q8位置在 `project_config.json` 配置，或用 `E6_Q8_ROOT` 指定；自包含交付包已包含必要输入。输入指纹不匹配时停止。运行完成后可在项目目录查看输出文件。本地不需要启动 EVO 常驻服务。
+研究流程完成后产生收益对照、机会成本、状态账本、中文报告及项目侧输入输出记录。平台执行证据应另行保存平台运行编号、状态、控制台原文、项目版本和输入输出散列，详见 `references/platform-run.md`。
 
-项目入口输入/输出保存在 `runs/evo/input.json` 与 `output.json`，步骤记录在 `results/run_steps.json`。这些是项目侧记录，不自动等同于目标环境或价值验收。可迁移交付步骤见 `README.md`。
-
-本次真实入口尝试记录见 EVO_PLATFORM_RUN_RECORD.md 与 uns/evo/platform_attempt_20261112.json。该记录明确区分平台观察与本地准备结果。
+此前从 EVO 页面创建了测试作品，但文件上传未完成，研究流程尚未从 EVO 真实入口成功运行。本仓库不以本地结果替代平台回执。

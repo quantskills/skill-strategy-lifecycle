@@ -21,12 +21,7 @@ quantSkills:
   validation_level: runnable
   maintainer_type: community
   platforms: [cursor, claude-code, codex, hermes, openclaw]
-  interface:
-    mode: structured
-    envelope: {name: quantskills-envelope, version: 1.0.0}
-    inputs: [{profile: frozen-strategy-panel, version_range: ">=1.0.0 <2.0.0", required: true}]
-    outputs: [{profile: lifecycle-evaluation-result, version: 1.0.0}]
-    adapters: [strategy-lifecycle-evaluation]
+  interface: {mode: not-applicable, reason: natural-language-only}
 ---
 
 # 策略生命周期控制
@@ -72,5 +67,6 @@ quantSkills:
 
 
 数据来源、输入假设、参数限制和风险边界见 eferences/input-contract.md 与 eferences/source-boundary.md。结果仅供研究和教育使用，不构成投资建议，也不承诺收益。
+
 
 
