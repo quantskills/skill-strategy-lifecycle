@@ -4,7 +4,28 @@
   "project": "E6策略生命周期控制研究",
   "status": "success_visible",
   "observed_at_from_output_path": "2026-11-12 18:00（由截图中的输出目录名推断，时区未显示）",
-  "platform_run_id": null,
+  "platform_run_id": "rae598d5dc1e542ad86ba7dfc16ee14bf",
+  "run_history": [
+    {
+      "run_id": "rae598d5dc1e542ad86ba7dfc16ee14bf",
+      "label": "第三次运行",
+      "status": "success",
+      "steps_completed": 8,
+      "note": "8步全部成功"
+    },
+    {
+      "run_id": "r466640a0cd964bea8664535de0e1cae0",
+      "label": "第一次运行",
+      "status": "failed",
+      "reason": "沙箱写权限被拒"
+    },
+    {
+      "run_id": "rf869dd04fea94f6e846c088fe0546a39",
+      "label": "第二次运行",
+      "status": "failed",
+      "reason": "引擎模块顶层 mkdir 失败"
+    }
+  ],
   "steps_completed": 8,
   "step_chain": [
     "测试",
@@ -64,7 +85,7 @@
   ],
   "source_screenshot": "references/evo-evidence/20261112-evo-success.png",
   "evidence_limitations": [
-    "截图未显示独立平台运行编号。",
+    "截图原始页面未显示运行编号；成功编号由用户随后补充并与本记录关联。",
     "截图只显示页面摘要，未包含完整控制台原文、输入指纹和输出文件哈希。",
     "运行成功状态和结果摘要以截图可见内容为准；完整平台回执仍应从EVO导出后补充。"
   ]
