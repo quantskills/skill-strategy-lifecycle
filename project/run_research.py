@@ -1,7 +1,8 @@
-"""Run the E6 strategy-lifecycle replay against the frozen Q8 package.
+"""Run the E6 strategy-lifecycle replay against the copied strategy engine.
 
-The Q8 package remains the source of the frozen model, data contract, simulator,
-and benchmark. E6 only adds a causal state controller and an audit ledger.
+E6 owns the strategy engine copy. Q8 remains the source of frozen model outputs,
+data contract, simulator inputs and benchmark values; E6 adds the causal state
+controller and audit ledger without importing Q8's Python module.
 """
 from __future__ import annotations
 
@@ -281,7 +282,8 @@ def main():
         "params": as_json(LifecycleParams(theta=theta).__dict__),
         "main_controller": "ic_only; health gate is sensitivity because Q8 health robustness failed",
         "q8_root": str(Q8),
-        "q8_engine_sha256": sha(Q8 / "scripts" / "engine_v2.py"),
+        "strategy_engine_sha256": sha(ROOT / "strategy" / "q8_engine_v2.py"),
+        "strategy_engine_source": "E6 project/strategy/q8_engine_v2.py; copied from frozen Q8 implementation",
         "q8_monitor_sha256": sha(Q8 / "results" / "v2" / "monitor.csv"),
         "q8_calibration_sha256": sha(Q8 / "results" / "v2" / "calibration.json"),
         "q8_score_source": "data/weekly_slim.csv::score_wf (archived walk-forward Ridge scores)",

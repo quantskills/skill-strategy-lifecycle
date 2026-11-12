@@ -1,4 +1,4 @@
-"""项目配置与冻结 Q8 输入合同；不依赖运行平台的内部实现。"""
+"""项目配置、冻结输入合同和 E6 内置策略副本。"""
 from __future__ import annotations
 
 import hashlib
@@ -44,11 +44,20 @@ def validate_inputs() -> dict:
 
 
 def load_q8(name: str = 'q8_frozen_engine'):
-    spec = importlib.util.spec_from_file_location(name, Q8 / 'scripts/engine_v2.py')
+    # Load the copied strategy implementation shipped with E6.  Q8 remains
+    # the frozen data/calibration source, but E6 no longer imports Q8 code.
+    local_engine = ROOT / 'strategy' / 'q8_engine_v2.py'
+    spec = importlib.util.spec_from_file_location(name, local_engine)
     if spec is None or spec.loader is None:
-        raise ImportError('无法加载冻结 Q8 研究引擎')
+        raise ImportError('无法加载 E6 内置策略副本')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    # Route the copied engine to the externally supplied frozen input assets.
+    # This keeps the implementation local to E6 while preserving Q8's exact
+    # data and cost configuration.
+    module.DATA = Q8 / 'data'
+    module.CFG = json.loads((Q8 / 'config' / 'audit_v2.json').read_text(encoding='utf-8'))
+    module.OUT = RESULTS
     # Preserve the upstream file unchanged. Only make CSV numeric parsing explicit
     # in the imported module, so fingerprints do not depend on pandas' fast parser.
     original_pd = module.pd

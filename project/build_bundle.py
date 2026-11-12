@@ -18,6 +18,7 @@ def build(destination: Path, include_results: bool = False):
         for source in ROOT.glob(pattern):shutil.copy2(source,destination/source.name)
     for name in ['scripts','tests']:
         shutil.copytree(ROOT/name,destination/name,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+    shutil.copytree(ROOT/'strategy',destination/'strategy',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     for name in ['skill-factor-health-monitor','agent-market-regime-monitor','skill-quant-strategy-diagnostics']:
         source=ROOT/'.agents/skills'/name
         shutil.copytree(source,destination/'.agents/skills'/name,ignore=shutil.ignore_patterns('__pycache__','.git','*.pyc','.env'))

@@ -40,7 +40,7 @@ quantSkills:
 
 项目入口为 `project/evo_entry.py`，主流程为 `project/run_all.py`。进入 `project/` 后执行 `python evo_entry.py`；若以仓库根目录作为工作目录，则执行 `python project/evo_entry.py`。在支持项目级运行任务的平台中，从固定提交号的项目版本执行入口；平台应保存运行编号、输入清单、原始控制台输出和结果文件散列。完整步骤和回执清单见 [EVO 运行说明](references/evo-runbook.md)。
 
-本技能与 Q8 的分工是：Q8 负责因子、模型和重训；本技能只读取冻结 Q8 输入，研究策略生命周期规则。
+本技能与 Q8 的分工是：Q8 负责因子、模型和重训；本项目内置一份策略引擎副本，读取冻结 Q8 输入并研究策略生命周期规则。运行时不动态导入 Q8 项目的 Python 文件；Q8 仍是冻结数据、校准和基线的来源。
 
 ## 必要输入
 

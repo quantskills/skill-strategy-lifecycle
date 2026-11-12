@@ -30,6 +30,9 @@ def main(other: Path, interpreter: Path):
         checks[name]=bool(ok)
     source_files=['run_all.py','run_research.py','state_machine.py','inference.py','extended_validation.py','project_config.py','evo_entry.py','acceptance.py','build_report_html.py']
     source_match={n:sha256(ROOT/n)==sha256(other/n) for n in source_files}
+    local_strategy = ROOT / 'strategy' / 'q8_engine_v2.py'
+    migrated_strategy = other / 'strategy' / 'q8_engine_v2.py'
+    strategy_copy_match = migrated_strategy.is_file() and sha256(local_strategy) == sha256(migrated_strategy)
     deps=subprocess.run([str(interpreter),'-m','pip','freeze','--local'],capture_output=True,text=True,check=True).stdout.splitlines()
     with tempfile.TemporaryDirectory(prefix='e6_bad_inputs_') as temporary:
         fake=Path(temporary);env={**os.environ,'E6_Q8_ROOT':str(fake),'PYTHONIOENCODING':'utf-8'}
@@ -47,9 +50,11 @@ def main(other: Path, interpreter: Path):
     for name in output['output_sha256']:
         shutil.copy2(other/'results'/name,snapshot/'results'/name)
     result={'scope':'local_migration_and_clean_dependencies_only',
-        'ok':all(checks.values()) and all(source_match.values()) and output['returncode']==0 and missing.returncode!=0 and changed.returncode!=0,
+        'ok':all(checks.values()) and all(source_match.values()) and strategy_copy_match and output['returncode']==0 and missing.returncode!=0 and changed.returncode!=0,
         'migrated_directory':str(other),'independent_environment':True,'dependencies':deps,'entry_returncode':output['returncode'],
-        'table_values_match_within_1e_12':checks,'source_sha256_matches':source_match,'max_numeric_difference':maxdiff,
+        'table_values_match_within_1e_12':checks,'source_sha256_matches':source_match,
+        'local_strategy_copy_present':migrated_strategy.is_file(),
+        'local_strategy_copy_sha256_matches':strategy_copy_match,'max_numeric_difference':maxdiff,
         'missing_inputs_rejected':missing.returncode!=0,'tampered_fingerprints_rejected':changed.returncode!=0,
         'target_platform_execution_claimed':False,
         'input_record':'runs/compatibility/input.json',

@@ -1,0 +1,11 @@
+{
+  "component": "q8_engine_v2",
+  "ownership": "E6 local strategy copy",
+  "source_role": "Q8 frozen strategy implementation used as the comparison baseline",
+  "source_path_at_copy": "E6_research_v2_release/frozen_q8/scripts/engine_v2.py",
+  "source_sha256": "4df2713561371a6f2c9f61fe5f4512d6f2852274d770f203eb40efc23cac06a4",
+  "local_path": "project/strategy/q8_engine_v2.py",
+  "copy_policy": "logic-preserving copy; runtime data/config paths are injected by project_config.load_q8",
+  "q8_code_runtime_import": false,
+  "note_zh": "E6 复制策略实现以解除代码运行时耦合；冻结 Q8 数据、校准和基线仍作为研究输入依赖。"
+}
