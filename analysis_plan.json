@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "status": "retrospective_extension_frozen_before_this_rerun_not_original_preregistration",
+  "scope": "同一 Q8 冻结模型；不重训、不修改评估月份、不以扩展实验选优",
+  "primary_arm": "lifecycle_v1",
+  "expressions": ["long", "hedge"],
+  "test_arms": ["simple_threshold", "lifecycle_v1", "lifecycle_health_gate"],
+  "hypotheses": 6,
+  "sampling_unit": "22 个时间周期；每周期四个重叠相位共同抽样，不能将 88 行视为独立样本",
+  "bootstrap_draws": 4000,
+  "bootstrap_blocks": [2, 4, 6],
+  "primary_block": 4,
+  "seed": 20261111,
+  "ci_level": 0.95,
+  "alpha": 0.05,
+  "multiplicity": ["BH", "共同零中心区块最大统计量单侧检验"],
+  "placebo": "全部 87 个非零循环位移；保留暴露计数及环形连续时长；不作为可部署规则或因果证明",
+  "sensitivity": {"cooldown": [1, 2, 3], "retire_count": [2, 3, 4], "recovery": [2, 3, 4]},
+  "missing_returns": [0.0, -0.5, -1.0],
+  "ablation": ["no_retirement", "no_reactivation_ramp", "no_initial_downweight", "immediate_recovery"],
+  "confirmatory_data": "未提供未来独立确认数据；所有新增实验均为回顾性探索",
+  "future_confirmation": "固定本计划和输入指纹后，在至少 52 个新增周度观测成熟后评估；不据现有样本改动主规则"
+}

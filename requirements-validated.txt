@@ -1,0 +1,6 @@
+# 独立干净环境复核使用的具体版本，Python 3.11。
+numpy==2.4.6
+pandas==3.1.1
+python-dateutil==4.0.0
+scipy==1.17.1
+tzdata==2026.6

@@ -1,0 +1,4 @@
+interface:
+  display_name: "因子衰退预警与动态再平衡"
+  short_description: "逐日跟踪因子 IC、识别结构变化，并给出可解释的降权建议"
+  default_prompt: "Use $factor-health-monitor to assess current factor health and generate decay alerts."

@@ -1,0 +1,31 @@
+{
+  "project": "E6 strategy lifecycle research",
+  "skills": [
+    {
+      "name": "skill-factor-health-monitor",
+      "source": "https://github.com/quantskills/skill-factor-health-monitor",
+      "local_path": ".agents/skills/skill-factor-health-monitor",
+      "license": "GPL-3.0",
+      "role": "factor IC health, CUSUM, posterior decline probability and weight-reduction evidence",
+      "used_as": "Q8 frozen health monitor and robustness evidence; not a new model fit"
+    },
+    {
+      "name": "agent-market-regime-monitor",
+      "source": "https://github.com/quantskills/agent-market-regime-monitor",
+      "local_path": ".agents/skills/agent-market-regime-monitor",
+      "license": "GPL-3.0",
+      "role": "Pandadata funding, event-heat and volatility market-regime evidence",
+      "used_as": "bundled live example snapshot plus historical Q8-only regime proxy; no credentials or live pull in this run"
+    },
+    {
+      "name": "skill-quant-strategy-diagnostics",
+      "source": "https://github.com/quantskills/skill-quant-strategy-diagnostics",
+      "local_path": ".agents/skills/skill-quant-strategy-diagnostics",
+      "license": "GPL-3.0-only",
+      "role": "matched-window returns, drawdown, IC, turnover and regime diagnostics",
+      "used_as": "offline diagnostics for all E6 arms"
+    }
+  ],
+  "integration_entrypoint": "scripts/regime_strategy_analysis.py",
+  "status": "bundled and validated"
+}

@@ -1,0 +1,15 @@
+# E6 策略生命周期研究忽略规则
+results/
+runs/
+delivery/
+tmp_evo_platform/
+*.zip
+*.tar.gz
+.env
+.venv/
+__pycache__/
+*.pyc
+frozen_q8/
+.agents/skills/agent-market-regime-monitor/outputs/live/
+EVO逐文件上传清单.md
+EVO_PLATFORM_RUN_RECORD.md

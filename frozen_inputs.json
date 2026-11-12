@@ -1,0 +1,16 @@
+{
+  "scope": "Q8 冻结研究输入，不包括运行平台文件",
+  "freeze_stage": "扩展复核开始前；不是历史预注册",
+  "sha256": {
+    "scripts/engine_v2.py": "4df2713561371a6f2c9f61fe5f4512d6f2852274d770f203eb40efc23cac06a4",
+    "config/audit_v2.json": "d8365c995fee4998f707e73b71530bf950ed892f1622003e9389ac17113adf17",
+    "data/weekly_slim.csv": "3f5802f18b4577e522111bc72af6c97c28d956bb8219ad64ee85d93a14067a28",
+    "data/panel_for_platform.csv": "c188ac197e3257088ccede5ba46a75cd3c684d214a14b98ad89f3f4b02684837",
+    "data/upstream_summary.json": "1dd6e499c547cdbcf490b5e30f4be670fedb89d57d3acb28e0e33c161cdb3797",
+    "results/v2/backtest_audit.json": "4eea71b123d1b32d22b79663a994b5cb9a53893f36c344d448e2f637f9313ea8",
+    "results/v2/metrics.json": "f9e339ef4f6b220b77a430d065fe55fb24ded685555df8ccde8788175e39b9c3",
+    "results/v2/monitor.csv": "58c8f62a85818c4a02c5baa66bd274d5eb2b86beab34e374da3a89b20e731489",
+    "results/v2/calibration.json": "f7f7dfe095c9999106268630b4fae53b0376bfbc1bcc78ab20d8f348d456fd9c",
+    "results/v2/health_robustness.json": "01b318ed46cc05ce6b573b032aa19fc3b7bee396d9004ce275407be8ac148167"
+  }
+}
