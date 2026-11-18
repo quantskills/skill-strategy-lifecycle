@@ -38,9 +38,15 @@ def build(destination: Path, include_results: bool = False):
     if examples_data.exists():
         shutil.rmtree(examples_data)
 
-    wrapper = ROOT.parent / "run_e6.py"
-    if wrapper.is_file():
-        shutil.copy2(wrapper, destination / "run_e6.py")
+    # 交付目录把 project/ 内容平铺到根目录，因此生成一个适配平铺结构的入口。
+    (destination / "run_e6.py").write_text(
+        "from __future__ import annotations\n"
+        "import subprocess, sys\n"
+        "from pathlib import Path\n"
+        "ROOT = Path(__file__).resolve().parent\n"
+        "raise SystemExit(subprocess.call([sys.executable, str(ROOT / 'evo_entry.py')], cwd=ROOT))\n",
+        encoding="utf-8",
+    )
     references = ROOT.parent / "references"
     if references.is_dir():
         _copy_tree(references, destination / "references")
