@@ -5,14 +5,15 @@ from html.parser import HTMLParser
 import numpy as np
 import pandas as pd
 
-from project_config import ROOT,Q8,RESULTS as OUT,validate_inputs,load_q8,sha256
+from project_config import ROOT,Q8,RESULTS as OUT,DATA_MODE,validate_inputs,load_q8,sha256
 
 
 def main():
     checks=[]
     def record(name,passed,evidence):
         checks.append({'item':name,'passed':bool(passed),'evidence':evidence})
-    inputs=validate_inputs();record('冻结输入指纹',inputs['ok'],f"{inputs['files']}份冻结文件逐一核对")
+    inputs=validate_inputs();record('Pandadata运行输入完整性',inputs['ok'],
+        f"来源={inputs.get('runtime_source','外部冻结输入')}；运行时目录已生成且不进入交付包")
     summary=pd.read_csv(OUT/'summary.csv');trades=pd.read_csv(OUT/'trades.csv',dtype={'date':str})
     ledger=pd.read_csv(OUT/'state_ledger.csv');attr=pd.read_csv(OUT/'state_attribution.csv')
     totals=[]
@@ -44,7 +45,7 @@ def main():
     record('退役消融诚实归因',not ext['retirement_ablation_changes_exposure'],'移除退役标签未改变交易路径，不宣称独立收益贡献')
     parser=HTMLParser();content=(OUT/'report.html').read_text(encoding='utf-8');parser.feed(content)
     record('中文展示与核心章节',all(x in content for x in ['样本外','机会成本','再激活','置信区间','Q8','EVO']),'HTML已解析，中文为主要展示语言')
-    record('研究运行入口与配置交付',all((ROOT/n).is_file() for n in ['requirements.txt','project_config.json','evo_entry.py','analysis_plan.json','frozen_inputs.json']),'仅项目侧运行兼容性')
+    record('研究运行入口与配置交付',all((ROOT/n).is_file() for n in ['requirements.txt','project_config.json','evo_entry.py','analysis_plan.json','pandadata_runtime.py']),'Pandadata运行入口与项目配置齐全')
     result={'ok':all(x['passed'] for x in checks),'checks':checks,'passed':sum(x['passed'] for x in checks),'total':len(checks),
             'scope':'项目侧本地验收，不代表目标环境实际验收或价值验收',
             'pending_external':['未来独立样本确认','目标 EVO 环境验收（如验收方要求）','V 和 D 正式赋值']}

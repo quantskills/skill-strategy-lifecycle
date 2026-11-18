@@ -1,4 +1,4 @@
 numpy>=1.26,<3
 pandas>=2.2,<4
 scipy>=1.11,<2
-pyarrow>=14,<26
+# Pandadata SDK 由 EVO 数据连接提供，不从压缩包安装，也不把令牌写入依赖文件。

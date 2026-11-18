@@ -101,7 +101,8 @@ def main():
     q8 = load_q8()
     cache, _ = q8.load_cache()
     audit = json.loads((Q8 / "results" / "v2" / "backtest_audit.json").read_text(encoding="utf-8"))
-    q8_metrics = json.loads((Q8 / "results" / "v2" / "metrics.json").read_text(encoding="utf-8"))
+    metrics_path = Q8 / "results" / "v2" / "metrics.json"
+    q8_metrics = json.loads(metrics_path.read_text(encoding="utf-8")) if metrics_path.is_file() else []
     eval_dates = [str(d) for d in audit["eval_dates"]]
     q8_monitor = pd.read_csv(Q8 / "results" / "v2" / "monitor.csv", dtype={"date": str}, float_precision='round_trip')
     q8_monitor["date"] = q8_monitor["date"].astype(str)
@@ -153,6 +154,16 @@ def main():
     }
 
     all_rows, summaries, opportunity = [], [], []
+    # A Pandadata runtime run has no precomputed Q8 result file.  Build the
+    # comparison table from the same cache and dates, preserving the original
+    # Q8 arm names without treating them as a second model fit.
+    if not q8_metrics:
+        for expression in ("long", "hedge"):
+            base = q8.simulate(cache, eval_dates, expression, exposure=full_exposure)
+            half_frame = q8.simulate(cache, eval_dates, expression, exposure=simple_exposure, alarm=alarm_map)
+            for arm, frame in (("A", base), ("C_ic", half_frame)):
+                q8_metrics.append({"expression": expression, "arm": arm, **q8.metrics(frame),
+                                   "source": "runtime Pandadata cache"})
     bootstrap = {}
     for expression in ("long", "hedge"):
         full = q8.simulate(cache, eval_dates, expression, exposure=full_exposure)
@@ -286,7 +297,7 @@ def main():
         "strategy_engine_source": "E6 project/strategy/q8_engine_v2.py; copied from frozen Q8 implementation",
         "q8_monitor_sha256": sha(Q8 / "results" / "v2" / "monitor.csv"),
         "q8_calibration_sha256": sha(Q8 / "results" / "v2" / "calibration.json"),
-        "q8_score_source": "data/weekly_slim.csv::score_wf (archived walk-forward Ridge scores)",
+        "q8_score_source": "runtime Pandadata panel::score_wf (point-in-time standardized score)",
         "q8_weekly_slim_sha256": input_sha256(resolve_input("data/weekly_slim.csv")),
         "q8_panel_sha256": input_sha256(resolve_input("data/panel_for_platform.csv")),
         "q8_upstream_summary_sha256": sha(Q8 / "data" / "upstream_summary.json"),
@@ -304,10 +315,10 @@ def main():
     save(OUT / "run.json", run)
     report = [
         "# E6：策略降权、退役与再激活是否优于持续持有", "",
-        "本研究复用 Q8 的冻结 Ridge 模型、可交易池、成熟标签日历、四相位账户和成本口径。E6 不重训模型，也不引入新因子；唯一新增的是可因果重放的生命周期状态机。", "",
+        "本研究在运行时复用 Pandadata 生成的标准化评分、可交易池、成熟标签日历、四相位账户和成本口径。E6 不重训 Q8 模型，也不把运行时数据写入交付包；唯一新增的是可因果重放的生命周期状态机。", "",
         f"- 评估日期：{eval_dates[0]}—{eval_dates[-1]}，{len(eval_dates)} 个周度决策日（4 相位、每相位 {audit['phase_cycles']} 个四周周期）。",
         f"- Q8 2024 校准阈值 theta={theta:.10f}；生命周期参数固定为 cooldown=2、retire=3/4、recovery=3。主规则只用 IC 告警；同时输出 health gate 敏感性。",
-        f"- 冻结 Q8 参照：A(always-on) long={next(x['total'] for x in q8_metrics if x['expression']=='long' and x['arm']=='A'):+.2%}、hedge={next(x['total'] for x in q8_metrics if x['expression']=='hedge' and x['arm']=='A'):+.2%}；C_ic(告警半仓) long={next(x['total'] for x in q8_metrics if x['expression']=='long' and x['arm']=='C_ic'):+.2%}、hedge={next(x['total'] for x in q8_metrics if x['expression']=='hedge' and x['arm']=='C_ic'):+.2%}。完整参照见 `q8_reference.csv`。",
+        f"- Q8 参照：A(always-on) long={next(x['total'] for x in q8_metrics if x['expression']=='long' and x['arm']=='A'):+.2%}、hedge={next(x['total'] for x in q8_metrics if x['expression']=='hedge' and x['arm']=='A'):+.2%}；C_ic(告警半仓) long={next(x['total'] for x in q8_metrics if x['expression']=='long' and x['arm']=='C_ic'):+.2%}、hedge={next(x['total'] for x in q8_metrics if x['expression']=='hedge' and x['arm']=='C_ic'):+.2%}。运行时输入来自 Pandadata，完整参照见 `q8_reference.csv`。",
         "- 每次状态转换只使用当时可见的成熟监控值；状态在交易前确定，收益只在状态固定后计入。评估期账本见 `state_ledger.csv`，含评估前 carry-in 的全历史账本见 `state_ledger_full.csv`。", "",
         "## 结果", "",
         "| 表达 | 策略 | 净收益 | 相对持续持有 | 平均暴露 | 最大回撤 | 成本均值 | 非满仓占比 |", "|---|---|---:|---:|---:|---:|---:|---:|",

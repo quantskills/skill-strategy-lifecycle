@@ -3,6 +3,7 @@ project/runs/
 project/delivery/
 project/tmp_evo_platform/
 project/frozen_q8/
+project/runtime_data/
 project/.agents/skills/agent-market-regime-monitor/outputs/
 *.zip
 *.tar.gz

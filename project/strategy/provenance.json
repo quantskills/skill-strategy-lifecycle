@@ -7,5 +7,5 @@
   "local_path": "project/strategy/q8_engine_v2.py",
   "copy_policy": "logic-preserving copy; runtime data/config paths are injected by project_config.load_q8",
   "q8_code_runtime_import": false,
-  "note_zh": "E6 复制策略实现以解除代码运行时耦合；冻结 Q8 数据、校准和基线仍作为研究输入依赖。"
+  "note_zh": "E6 复制策略实现以解除代码运行时耦合；Pandadata 在 EVO 运行时提供输入，交付包不携带市场数据。"
 }

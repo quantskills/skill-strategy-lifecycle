@@ -1,11 +1,9 @@
-"""项目配置、冻结输入合同和 E6 内置策略副本。"""
+"""项目配置、Pandadata 运行时输入合同和 E6 内置策略副本。"""
 from __future__ import annotations
 
 import hashlib
 import importlib.util
 import json
-import gzip
-import lzma
 import os
 from pathlib import Path
 
@@ -18,6 +16,9 @@ def configured_path(variable: str, key: str) -> Path:
     return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
 
 
+DATA_MODE = os.environ.get('E6_DATA_MODE', 'pandadata').strip().lower()
+# Q8 is a logical runtime input namespace.  In the default mode it is created
+# by pandadata_runtime.py and is never copied into the repository or package.
 Q8 = configured_path('E6_Q8_ROOT', 'q8_root')
 RESULTS = configured_path('E6_RESULTS_DIR', 'results_dir')
 REQUIRED_Q8 = [
@@ -34,7 +35,7 @@ def sha256(path: Path) -> str:
 
 
 def resolve_input(name: str) -> Path:
-    """Find an input in plain, gzip or xz form without changing its logical name."""
+    """Find a runtime input in plain or common columnar forms."""
     plain = Q8 / name
     if plain.is_file():
         return plain
@@ -51,25 +52,17 @@ def resolve_input(name: str) -> Path:
 
 def input_sha256(path: Path) -> str:
     """Hash logical file bytes so compressed delivery equals the frozen CSV hash."""
-    if path.suffix not in {'.xz', '.gz'} and not path.name.endswith(('.pkl.xz', '.parquet')):
-        return sha256(path)
-    if path.name.endswith('.parquet'):
-        return sha256(path)
-    if path.name.endswith('.pkl.xz'):
-        with lzma.open(path, 'rb') as stream:
-            digest = hashlib.sha256()
-            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
-                digest.update(chunk)
-            return digest.hexdigest()
-    opener = lzma.open if path.suffix == '.xz' else gzip.open
-    digest = hashlib.sha256()
-    with opener(path, 'rb') as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return sha256(path)
 
 
 def validate_inputs() -> dict:
+    if DATA_MODE == 'pandadata':
+        from pandadata_runtime import prepare_runtime_inputs
+        manifest = prepare_runtime_inputs()
+        missing = [name for name in REQUIRED_Q8 if not resolve_input(name).is_file()]
+        if missing:
+            raise FileNotFoundError('Pandadata 运行时输入不完整：' + ', '.join(missing))
+        return {'ok': True, 'mode': 'pandadata', **manifest}
     missing = [name for name in REQUIRED_Q8 if not resolve_input(name).is_file()]
     if missing:
         raise FileNotFoundError('缺少冻结 Q8 输入：' + ', '.join(missing) + '; 请设置 E6_Q8_ROOT')

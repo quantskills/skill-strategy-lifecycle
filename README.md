@@ -2,7 +2,7 @@
 
 简体中文 | [QuantSkills 私有仓库](https://github.com/quantskills/skill-strategy-lifecycle)
 
-> QuantSkills `skill-*` 项目：在冻结 Q8 因子、模型和策略输入后，重放策略状态机，比较持续启用、简单阈值、降权、冷却、退役和再激活规则的样本外净收益、机会成本与状态账本。
+> QuantSkills `skill-*` 项目：运行时从 Pandadata 获取策略输入，重放策略状态机，比较持续启用、简单阈值、降权、冷却、退役和再激活规则的样本外净收益、机会成本与状态账本。
 
 [![QuantSkills](https://img.shields.io/badge/QuantSkills-skill--strategy--lifecycle-5b6ee1)](https://github.com/quantskills/skill-strategy-lifecycle)
 [![许可证](https://img.shields.io/badge/license-GPL--3.0--only-blue)](LICENSE)
@@ -13,11 +13,11 @@
 
 本项目把这些问题放进一套可重放的策略状态机。状态转换只使用当时已经成熟的数据，先确定当期状态和暴露，再计算后续收益；不能根据未来收益事后挑选应当停用的月份。
 
-Q8 负责因子、模型和模型重训；E6 内置一份经过指纹记录的策略引擎副本，并读取冻结的 Q8 输入研究完整策略生命周期。这样 E6 的运行代码不再动态导入 Q8 项目；Q8 仍是冻结数据、校准和基线的来源。E6 不重新训练 Q8，也不把监控建议直接当作交易结论。
+Q8 负责因子、模型和模型重训；E6 内置一份策略引擎副本，运行时从 Pandadata 生成标准化输入，研究完整策略生命周期。这样 E6 的运行代码不动态导入 Q8 项目，也不把 Q8 数据打进交付包；E6 不重新训练 Q8，也不把监控建议直接当作交易结论。
 
-## 当前研究结论
+## 历史冻结样本结论（不属于本次 Pandadata 运行）
 
-当前结果是回顾性样本中的描述性结果，使用 22 个时间周期、4 个相位账户和冻结 Q8 信号。多头累计净收益如下：
+以下是历史冻结样本的描述性结果，使用 22 个时间周期、4 个相位账户和冻结 Q8 信号；它只用于解释研究基线，不代表新的 Pandadata 运行结果。多头累计净收益如下：
 
 | 方案 | 累计净收益 | 平均暴露 | 最差阶段回撤 | 停用阶段占比 |
 |---|---:|---:|---:|---:|
@@ -34,7 +34,7 @@ Q8 负责因子、模型和模型重训；E6 内置一份经过指纹记录的�
 
 ### 结论怎样回答本项目选题
 
-本项目对“策略降权、退役与再激活是否优于持续持有”的回答是：**在当前冻结 Q8 输入和这段回顾性样本中，没有证据表明完整生命周期规则优于持续启用。** 生命周期规则把平均暴露从 100.00% 降到 46.59%，最差阶段回撤从 -26.82% 收窄到 -19.65%，但累计净收益少 8.50 个百分点；简单阈值也没有超过持续启用。因此，当前规则更像风险暴露控制和治理审计工具，而不是已经验证的收益增强规则。
+本项目对“策略降权、退役与再激活是否优于持续持有”的历史回答是：**在冻结 Q8 输入和这段回顾性样本中，没有证据表明完整生命周期规则优于持续启用。** 生命周期规则把平均暴露从 100.00% 降到 46.59%，最差阶段回撤从 -26.82% 收窄到 -19.65%，但累计净收益少 8.50 个百分点；简单阈值也没有超过持续启用。因此，当前规则更像风险暴露控制和治理审计工具，而不是已经验证的收益增强规则。EVO 重新取数后应以新运行回执更新结果。
 
 降权、冷却、退役和再激活已经在状态机中被明确建模，并在逐期账本中记录进入、退出、目标暴露和原因。可是本期消融显示，删除“退役”标签并没有改变暴露路径，说明退役在当前参数下主要是治理状态，尚未证明有独立交易增量。再激活承担的是恢复半仓、观察后回到满仓的路径控制；它减少了重新开仓的突变，但在样本较短时也可能带来恢复延迟和机会成本。
 
@@ -120,36 +120,22 @@ python evo_entry.py
 
 完整自包含包也提供根目录入口：`python run_e6.py`。该入口只转发到同一套 `project/evo_entry.py` 流程，适合 EVO 将包根目录作为工作目录的运行方式。
 
-为适配 EVO 的 50 MB 限制，最新交付包使用 Parquet 保存两张大表：`project/frozen_q8/data/panel_for_platform.parquet` 和 `project/frozen_q8/data/weekly_slim.parquet`。入口会自动读取 Parquet；冻结输入清单在包内同步使用 Parquet 文件指纹，原始 CSV 指纹保存在包清单中。周表去掉了面板中已经存在的重复 `fwd_ret` 列，运行时由面板提供该字段，其他字段和计算口径保持不变。
+最新交付包不携带行情、因子、冻结 Q8 结果或 Parquet/CSV 数据，压缩包只包含代码、配置、三个技能、输入契约和报告模板。EVO 运行时由 `project/pandadata_runtime.py` 认证 Pandadata，获取日线/因子并生成临时周频面板；运行目录 `project/runtime_data/` 被排除在 Git 和交付清单之外。
 
-它依次执行测试、研究主流程、行情与策略诊断、扩展验证、独立验收和中文 HTML 生成。平台级运行时应保存项目版本、平台运行编号、入口命令、原始控制台输出、输入指纹、输出清单和结果散列。
-
-本项目已经按 EVO 项目级运行方式设计，但当前仓库记录的是项目侧入口和兼容性准备；EVO 真实任务回执尚未完成，不能把本地结果写成 EVO 平台结果。
+它依次执行 Pandadata 取数、输入检查、测试、研究主流程、行情与策略诊断、扩展验证、独立验收和中文 HTML 生成。`runtime_manifest.json` 记录数据源、接口、日期范围、因子、行数和哈希；不保存到仓库，也不把旧冻结结果冒充成新的 Pandadata 结果。
 
 ## 在 EVO 中运行的方法
 
-EVO 运行时应使用**项目版本入口**，不要把压缩包拆成很多文件逐个上传。具体操作按 EVO 当前界面提供的仓库/项目导入入口完成，仓库地址为：
+EVO 使用仓库根目录入口，不需要把压缩包拆成很多文件逐个上传：
 
-```text
-https://github.com/quantskills/skill-strategy-lifecycle
-```
+1. 导入私有仓库并固定提交号；
+2. 在 EVO 数据连接中授权 Pandadata，或设置 `PANDADATA_USERNAME`、`PANDADATA_PASSWORD`、`PANDADATA_BASE_URL`；
+3. 确认 `E6_DATA_MODE=pandadata`（默认值），并按需要设置 `PANDADATA_START_DATE`、`PANDADATA_END_DATE`、`PANDADATA_UNIVERSE` 和 `PANDADATA_FACTORS`；
+4. 在仓库根目录执行 `python run_e6.py`。若工作目录已经是 `project/`，执行 `python evo_entry.py`，两个入口调用同一套流程；
+5. 入口先认证并取数，再生成状态账本、机会成本、统计检验和中文报告。认证失败、数据为空、字段不足或历史长度不足时必须失败，不能回退到本地旧数据；
+6. 运行结束核对 `project/runs/evo/input.json`、`project/runs/evo/output.json`、`project/results/` 和 `project/runtime_data/q8/runtime_manifest.json`。平台回执应保存运行编号、提交号、入口命令、输入元数据、输出清单和哈希。
 
-建议按以下顺序执行：
-
-1. 在 EVO 新建或选择一个有权限的项目，绑定本仓库的私有版本，并固定提交号或标签；记录仓库地址、提交号和运行时间。
-2. 在运行环境中挂载或关联经过授权的 Q8 冻结输入。输入放在 `project/` 约定的路径下，不把私有数据、令牌或会话凭据提交到 GitHub。
-3. 以仓库根目录为工作目录执行统一入口：
-
-   ```powershell
-   python project/evo_entry.py
-   ```
-
-   如果 EVO 的工作目录已经是 `project/`，则执行 `python evo_entry.py`，两者调用的是同一个入口。
-4. 入口先校验 `project/frozen_inputs.json` 的输入指纹，再调用 `run_all.py` 完成测试、生命周期重放、统计验证、扩展验证、验收和中文报告生成。输入缺失或指纹不一致时应让任务失败，不能用本地旧结果代替。
-5. 任务结束后，在 EVO 任务记录中保存平台运行编号、提交号、入口命令和完整控制台输出；同时核对仓库内 `project/runs/evo/input.json`、`project/runs/evo/output.json` 以及 `project/results/` 的文件清单和 SHA256。
-6. 只有当 EVO 页面显示成功、入口返回码为 0、`output.json` 为 `succeeded`，且 `summary.csv`、`state_ledger.csv`、`opportunity_cost.json`、`report.html` 和 `acceptance.json` 均存在时，才可把这次结果写入平台证据。报告中必须区分“EVO 实际回执”和“历史项目侧结果”。
-
-EVO 的真实回执至少应包含：平台运行编号、项目版本、输入清单及指纹、原始输出、结果文件清单、结果散列和成功状态。仅上传或下载一个 HTML/CSV 文件，不能证明研究已经从 EVO 真实入口运行。当前仓库没有把未完成的 EVO 回执写成成功记录；在获得真实回执前，本 README 中的数值只能称为项目侧回顾性结果。
+压缩包中的 `delivery_manifest.json` 明确写有 `data_in_package: false` 和 `runtime_data_source: Pandadata`。既有 `rae598d5dc1e542ad86ba7dfc16ee14bf` 是历史冻结输入运行证据，不能当作本次 Pandadata 运行结果；新的 Pandadata 结果必须以 EVO 真实入口回执为准。
 
 ## EVO 成功运行证据
 
@@ -159,30 +145,13 @@ EVO 的真实回执至少应包含：平台运行编号、项目版本、输入�
 
 ## 输入合同
 
+Pandadata 的字段、认证、日期边界、成熟标签、缺失处理和运行产物详见 [Pandadata 运行时输入契约](references/pandadata-input-contract.md)。策略引擎需要 `date`、`symbol`、`open`、`close` 以及至少一个数值因子；适配器会生成周频 `fwd_ret`、点时 `score_wf`、监控、校准和健康诊断。所有文件在 EVO 运行目录临时生成，包内没有这些数据。
+
 ## E6 与 Q8 的解耦边界
 
-此前 E6 会动态加载 `frozen_q8/scripts/engine_v2.py`，因此存在代码层面的 Q8 运行时耦合。本版本已将同一份冻结策略实现复制到 `project/strategy/q8_engine_v2.py`，并由 E6 自己加载；`project/strategy/audit_v2.json` 保存对应的策略配置。运行时不再要求 Q8 项目代码位于路径中。
+E6 内置 Q8 策略实现副本，运行时不动态导入 Q8 项目代码。Q8 与 E6 的协作通过输入字段、成本口径和研究问题衔接：Q8 负责因子/模型方法，E6 负责降权、冷却、退役、再激活和状态账本。在本版本中，Pandadata 是运行时数据源；Q8 的历史冻结结果只作为比较口径说明，不被打进压缩包，也不会被隐式回退使用。
 
-仍然保留的依赖是研究输入依赖：E6 需要授权的冻结 Q8 数据、成熟监控、校准阈值和基线指标，且由 `project/frozen_inputs.json` 校验指纹。这是为了保证与 Q8 的比较口径一致，不是运行时代码耦合。若要完全自包含地在 EVO 运行，需要把这些冻结输入放入运行包的 `frozen_q8/` 目录；输入包含大体积数据，不建议直接提交 GitHub，可作为 EVO 的受控数据资产挂载。
-
-策略副本的 SHA256 会写入 `results/run.json` 的 `strategy_engine_sha256`。如果 E6 策略副本被修改，平台运行应重新生成并审核对应的指纹，不能继续引用旧结果。
-
-私有 Q8 数据和平台凭据不提交到仓库。运行环境需要提供以下冻结输入，并由 `project/frozen_inputs.json` 校验散列，以下路径以 `project/` 为根目录：
-
-```text
-frozen_q8/scripts/engine_v2.py
-frozen_q8/config/audit_v2.json
-frozen_q8/data/weekly_slim.csv
-frozen_q8/data/panel_for_platform.csv
-frozen_q8/data/upstream_summary.json
-frozen_q8/results/v2/backtest_audit.json
-frozen_q8/results/v2/metrics.json
-frozen_q8/results/v2/monitor.csv
-frozen_q8/results/v2/calibration.json
-frozen_q8/results/v2/health_robustness.json
-```
-
-输入还必须固定日期边界、费用、策略表达、成熟观察窗口、冷却长度、退役门槛和恢复门槛。不得用未来收益补齐成熟标签，不得在评估期重新选参。
+如果必须复核旧冻结结果，需显式设置 `E6_DATA_MODE=frozen` 并提供包外受控输入目录；该模式不属于默认 EVO 交付路径。策略副本的 SHA256 和 Pandadata 输入哈希会写入运行记录，便于审计。
 
 ## 输出文件
 
@@ -219,13 +188,13 @@ frozen_q8/results/v2/health_robustness.json
     ├── tests/                       # 状态边界和统计测试
     ├── .agents/skills/              # 三个内置技能
     ├── analysis_plan.json           # 回顾性扩展计划
-    ├── project_config.json          # 路径和结果配置
+    ├── project_config.json          # 运行模式和结果配置
     ├── strategy/                    # E6 内置 Q8 策略引擎副本
     │   ├── q8_engine_v2.py
     │   ├── audit_v2.json
     │   ├── provenance.json
     │   └── README.md
-    └── frozen_inputs.json          # Q8 输入指纹清单
+    └── pandadata_runtime.py        # EVO 运行时取数与输入生成
 ```
 
 三个内置技能位于 `project/.agents/skills/`：
@@ -234,7 +203,7 @@ frozen_q8/results/v2/health_robustness.json
 - `agent-market-regime-monitor`：市场状态观察框架；
 - `skill-quant-strategy-diagnostics`：收益、回撤、IC、换手和状态诊断。
 
-市场状态部分使用 Q8 冻结数据代理时，只能用于历史分层；没有实时授权数据时，不把它写成当前市场判断。
+市场状态部分在 EVO 中可使用 Pandadata 运行时数据；没有成功获取实时授权数据时，任务直接失败，不把旧快照写成当前市场判断。
 
 ## 验收和质量边界
 
@@ -250,7 +219,7 @@ frozen_q8/results/v2/health_robustness.json
 
 ## 研究限制
 
-研究使用已查看的历史样本，不能称为未见确认集。22 个主要周期较少，区块检验依赖弱平稳假设；不显著不代表等效或无效。历史市场状态标签是冻结 Q8 代理，不能替代实时 Pandadata 证据。状态账本证明了规则可重放和点时约束，不能证明未来收益或真实成交。
+历史冻结样本结论不能称为未见确认集。运行时 Pandadata 取数仍需检查历史长度、字段质量和权限；不显著不代表等效或无效。状态账本证明了规则可重放和点时约束，不能证明未来收益或真实成交。
 
 本项目仅供量化研究和教育使用，不构成投资建议、交易授权或收益承诺。
 

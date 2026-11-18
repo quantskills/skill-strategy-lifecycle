@@ -6,7 +6,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from project_config import ROOT, RESULTS, sha256, validate_inputs
+from project_config import ROOT, RESULTS, DATA_MODE, sha256, validate_inputs
 
 
 record_dir = ROOT / "runs" / "evo"
@@ -16,6 +16,8 @@ meta = {
     "research_entry": "run_all.py",
     "started_at_epoch": time.time(),
     "execution_scope": "project_entry; caller_environment_not_asserted",
+    "data_mode": DATA_MODE,
+    "runtime_source": "Pandadata" if DATA_MODE == "pandadata" else "external_frozen_inputs",
     "python_version": sys.version.split()[0],
     "plan_sha256": sha256(ROOT/'analysis_plan.json'),
     "entry_sha256": sha256(Path(__file__)),
@@ -23,7 +25,9 @@ meta = {
 (record_dir / "input.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 print("EVO_ENTRY_START " + json.dumps(meta, ensure_ascii=False), flush=True)
 try:
-    validate_inputs()
+    input_manifest = validate_inputs()
+    meta["input_manifest"] = {k: v for k, v in input_manifest.items() if k != "input_sha256"}
+    (record_dir / "input.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
     completed = subprocess.run([sys.executable, str(ROOT / "run_all.py")], cwd=ROOT, check=False)
     code=completed.returncode
     error=None

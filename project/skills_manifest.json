@@ -7,7 +7,7 @@
       "local_path": ".agents/skills/skill-factor-health-monitor",
       "license": "GPL-3.0",
       "role": "factor IC health, CUSUM, posterior decline probability and weight-reduction evidence",
-      "used_as": "Q8 frozen health monitor and robustness evidence; not a new model fit"
+      "used_as": "Pandadata runtime factor health monitor; not a new model fit"
     },
     {
       "name": "agent-market-regime-monitor",
@@ -15,7 +15,7 @@
       "local_path": ".agents/skills/agent-market-regime-monitor",
       "license": "GPL-3.0",
       "role": "Pandadata funding, event-heat and volatility market-regime evidence",
-      "used_as": "bundled live example snapshot plus historical Q8-only regime proxy; no credentials or live pull in this run"
+      "used_as": "Pandadata runtime market-regime input; credentials stay in EVO environment"
     },
     {
       "name": "skill-quant-strategy-diagnostics",

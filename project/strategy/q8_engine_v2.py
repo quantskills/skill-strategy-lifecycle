@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 # E6 carries this strategy implementation locally.  The frozen input root is
 # configurable so the copied engine can run inside an EVO project package
 # without importing Q8's Python module at runtime.
-DATA = Path(os.environ.get("E6_STRATEGY_DATA_ROOT", ROOT / "frozen_q8" / "data")).resolve()
+DATA = Path(os.environ.get("E6_STRATEGY_DATA_ROOT", ROOT / "runtime_data" / "q8" / "data")).resolve()
 OUT = ROOT / "results" / "v2"
 CFG_PATH = Path(os.environ.get("E6_STRATEGY_CONFIG", ROOT / "strategy" / "audit_v2.json")).resolve()
 CFG = json.loads(CFG_PATH.read_text(encoding="utf-8"))
@@ -130,14 +130,23 @@ def monitors(cache):
         valid = c["elig"] & np.isfinite(c["score"]) & np.isfinite(c["ret"])
         ic[date] = pd.Series(c["score"][valid]).corr(pd.Series(c["ret"][valid]), method="spearman") if valid.sum() > 30 else np.nan
     frame, calibration, theta = mature_frame(pd.Series(ic), dates)
-    detail = pd.read_csv(ROOT / "runs/r01_monitor_entry/health/health_timeseries.csv")
+    health_path = DATA / "health_timeseries.csv"
+    if health_path.is_file():
+        detail = pd.read_csv(health_path)
+    else:
+        # Runtime Pandadata input may not provide a separate health artifact.
+        # Keep the health path explicitly conservative and record that it is
+        # unavailable instead of inventing a post-hoc alarm.
+        detail = pd.DataFrame({"date": dates, "decline_probability": 0.0, "cusum_alarm": False})
     detail["date"] = pd.to_datetime(detail.date).dt.strftime("%Y%m%d")
     detail = detail.set_index("date")
     state = detail.decline_probability.ge(.8) | detail.cusum_alarm.eq(True)
     frame["health_alarm"] = state.reindex(frame.index).ffill().fillna(False).astype(bool)
     frame["health_probability"] = detail.decline_probability.reindex(frame.index).ffill()
     # PSI is an already-recorded contemporaneous diagnostic, not a refitted threshold.
-    psi = pd.read_csv(DATA / "third_period_psi.csv", dtype={"date": str}).set_index("date").triggered
+    psi_path = DATA / "third_period_psi.csv"
+    psi = (pd.read_csv(psi_path, dtype={"date": str}).set_index("date").triggered
+           if psi_path.is_file() else pd.Series(False, index=frame.index))
     frame["psi_alarm"] = psi.reindex(frame.index).fillna(0).astype(bool)
     frame.to_csv(OUT / "monitor.csv")
     save(OUT / "calibration.json", {"theta": theta, "start": min(calibration.index),

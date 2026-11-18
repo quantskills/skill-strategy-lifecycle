@@ -1,53 +1,70 @@
-"""生成自包含研究运行包；只复制本项目和冻结 Q8 研究输入。"""
+"""生成不携带行情、因子、结果数据的 Pandadata 运行包。"""
 from __future__ import annotations
 
 import argparse
 import json
-import lzma
 import shutil
 from pathlib import Path
 
-from project_config import ROOT, Q8, REQUIRED_Q8, sha256, validate_inputs
+from project_config import ROOT, sha256
 
 
-def build(destination: Path, include_results: bool = False, compress_large: bool = False):
-    validate_inputs()
-    destination=destination.resolve()
-    if destination.exists():raise FileExistsError('不覆盖已有交付目录：'+str(destination))
+DATA_NAMES = {"frozen_q8", "runtime_data", "results", "runs", "tmp_evo_platform"}
+
+
+def _copy_tree(source: Path, target: Path) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".env", "outputs"))
+
+
+def build(destination: Path, include_results: bool = False):
+    destination = destination.resolve()
+    if destination.exists():
+        raise FileExistsError("不覆盖已有交付目录：" + str(destination))
     destination.mkdir(parents=True)
-    for pattern in ['*.py','*.json','*.md','requirements*.txt']:
-        for source in ROOT.glob(pattern):shutil.copy2(source,destination/source.name)
-    for name in ['scripts','tests']:
-        shutil.copytree(ROOT/name,destination/name,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
-    shutil.copytree(ROOT/'strategy',destination/'strategy',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
-    for name in ['skill-factor-health-monitor','agent-market-regime-monitor','skill-quant-strategy-diagnostics']:
-        source=ROOT/'.agents/skills'/name
-        shutil.copytree(source,destination/'.agents/skills'/name,ignore=shutil.ignore_patterns('__pycache__','.git','*.pyc','.env'))
-    for name in REQUIRED_Q8:
-        target=destination/'frozen_q8'/name
-        target.parent.mkdir(parents=True,exist_ok=True)
-        source=Q8/name
-        if compress_large and name in {'data/weekly_slim.csv','data/panel_for_platform.csv'}:
-            target=target.with_suffix(target.suffix + '.xz')
-            with source.open('rb') as stream, lzma.open(target,'wb',preset=9) as packed:
-                shutil.copyfileobj(stream, packed, length=1024*1024)
-        else:
-            shutil.copy2(source,target)
-    if include_results:
-        shutil.copytree(ROOT/'results',destination/'results',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
-        if (ROOT/'runs/compatibility').exists():
-            shutil.copytree(ROOT/'runs/compatibility',destination/'runs/compatibility')
-        if (ROOT/'runs/before_v2').exists():
-            shutil.copytree(ROOT/'runs/before_v2',destination/'runs/before_v2',ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
-    config=json.loads((destination/'project_config.json').read_text(encoding='utf-8'))
-    config['q8_root']='frozen_q8'
-    (destination/'project_config.json').write_text(json.dumps(config,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    manifest={str(p.relative_to(destination)).replace('\\','/'):sha256(p) for p in destination.rglob('*') if p.is_file()}
-    (destination/'delivery_manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'destination':str(destination),'files':len(manifest),'frozen_inputs':len(REQUIRED_Q8)},ensure_ascii=False))
+
+    for pattern in ["*.py", "*.json", "*.md", "requirements*.txt"]:
+        for source in ROOT.glob(pattern):
+            if source.name == "frozen_inputs.json":
+                continue
+            shutil.copy2(source, destination / source.name)
+    for name in ["scripts", "tests", "strategy"]:
+        _copy_tree(ROOT / name, destination / name)
+    skills = ROOT / ".agents" / "skills"
+    for name in ["skill-factor-health-monitor", "agent-market-regime-monitor", "skill-quant-strategy-diagnostics"]:
+        _copy_tree(skills / name, destination / ".agents" / "skills" / name)
+    # 技能示例中的 CSV 不是本项目运行输入，交付包也不保留示例数据。
+    examples_data = destination / ".agents" / "skills" / "skill-quant-strategy-diagnostics" / "examples" / "data"
+    if examples_data.exists():
+        shutil.rmtree(examples_data)
+
+    wrapper = ROOT.parent / "run_e6.py"
+    if wrapper.is_file():
+        shutil.copy2(wrapper, destination / "run_e6.py")
+    references = ROOT.parent / "references"
+    if references.is_dir():
+        _copy_tree(references, destination / "references")
+
+    config = json.loads((destination / "project_config.json").read_text(encoding="utf-8"))
+    config.update({"q8_root": "runtime_data/q8", "data_mode": "pandadata", "data_in_package": False})
+    (destination / "project_config.json").write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    manifest = {str(p.relative_to(destination)).replace("\\", "/"): sha256(p)
+                for p in destination.rglob("*") if p.is_file()}
+    delivery = {"package_version": "pandadata-runtime-v7", "data_in_package": False,
+                "runtime_data_source": "Pandadata", "entry": "run_e6.py 或 project/evo_entry.py",
+                "credentials": ["PANDADATA_USERNAME", "PANDADATA_PASSWORD", "PANDADATA_BASE_URL"],
+                "runtime_environment": ["E6_DATA_MODE=pandadata", "PANDADATA_START_DATE", "PANDADATA_END_DATE",
+                                         "PANDADATA_UNIVERSE", "PANDADATA_FACTORS"],
+                "excluded_paths": sorted(DATA_NAMES), "files": manifest}
+    (destination / "delivery_manifest.json").write_text(json.dumps(delivery, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"destination": str(destination), "files": len(manifest), "data_in_package": False,
+                      "runtime_source": "Pandadata"}, ensure_ascii=False))
 
 
-if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--destination',required=True,type=Path)
-    parser.add_argument('--include-results',action='store_true');parser.add_argument('--compress-large',action='store_true',help='将两个大CSV以xz保存，入口会按原始CSV内容校验哈希')
-    args=parser.parse_args();build(args.destination,args.include_results,args.compress_large)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--destination", required=True, type=Path)
+    parser.add_argument("--include-results", action="store_true", help="兼容旧命令；新包仍不会带研究结果数据")
+    args = parser.parse_args()
+    build(args.destination, args.include_results)

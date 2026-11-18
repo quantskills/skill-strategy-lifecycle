@@ -9,7 +9,7 @@ https://github.com/quantskills/skill-strategy-lifecycle
 ## 一次完整运行
 
 1. 在 EVO 中新建或选择有权限的项目，关联上面的私有仓库，并固定提交号或标签。
-2. 为该运行关联经过授权的 Q8 冻结输入。数据应挂载到 `project/` 下的输入合同路径；仓库本身不存放私有数据、令牌和会话凭据。
+2. 为该运行配置 Pandadata 连接或环境变量 `PANDADATA_USERNAME`、`PANDADATA_PASSWORD`、`PANDADATA_BASE_URL`；仓库本身不存放私有数据、令牌和会话凭据。
 3. 从仓库根目录执行：
 
    ```powershell
@@ -17,10 +17,10 @@ https://github.com/quantskills/skill-strategy-lifecycle
    ```
 
    若 EVO 将 `project/` 设为工作目录，则执行 `python evo_entry.py`。这两个命令调用相同的项目入口。
-4. 入口会先检查 `project/frozen_inputs.json`，然后运行 `run_all.py`。流程包括单元测试、状态机重放、收益/机会成本核算、统计和扩展验证、项目侧验收以及中文 HTML 报告生成。
+4. 入口会先从 Pandadata 取数并写入临时 `project/runtime_data/q8/`，再运行 `run_all.py`。流程包括单元测试、状态机重放、收益/机会成本核算、统计和扩展验证、项目侧验收以及中文 HTML 报告生成。
 5. 输入缺失、散列不一致、日期重复或未来信息检查失败时，任务必须失败；不能把本地历史结果复制到 EVO 输出目录。
 
-上传 50 MB 以内的 Parquet 版本时，保持 `project/frozen_q8/data/` 下的两个文件名不变：`panel_for_platform.parquet`、`weekly_slim.parquet`。运行环境需要安装 `project/requirements.txt` 中的 `pyarrow`，入口会自动读取 Parquet 并按包内冻结指纹校验。
+压缩包不包含 CSV、Parquet 或其他行情/因子数据，因此不会触发 50 MB 数据上传问题。运行时输入仅保留在 EVO 的临时目录，并由 `runtime_manifest.json` 记录来源和哈希。
 
 ## EVO 回执清单
 

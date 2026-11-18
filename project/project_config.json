@@ -1,5 +1,5 @@
 {
-  "q8_root": "frozen_q8",
+  "q8_root": "runtime_data/q8",
   "results_dir": "results",
   "analysis_plan": "analysis_plan.json"
 }
