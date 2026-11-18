@@ -120,6 +120,8 @@ python evo_entry.py
 
 完整自包含包也提供根目录入口：`python run_e6.py`。该入口只转发到同一套 `project/evo_entry.py` 流程，适合 EVO 将包根目录作为工作目录的运行方式。
 
+为适配 EVO 的 50 MB 限制，最新交付包使用 Parquet 保存两张大表：`project/frozen_q8/data/panel_for_platform.parquet` 和 `project/frozen_q8/data/weekly_slim.parquet`。入口会自动读取 Parquet；冻结输入清单在包内同步使用 Parquet 文件指纹，原始 CSV 指纹保存在包清单中。周表去掉了面板中已经存在的重复 `fwd_ret` 列，运行时由面板提供该字段，其他字段和计算口径保持不变。
+
 它依次执行测试、研究主流程、行情与策略诊断、扩展验证、独立验收和中文 HTML 生成。平台级运行时应保存项目版本、平台运行编号、入口命令、原始控制台输出、输入指纹、输出清单和结果散列。
 
 本项目已经按 EVO 项目级运行方式设计，但当前仓库记录的是项目侧入口和兼容性准备；EVO 真实任务回执尚未完成，不能把本地结果写成 EVO 平台结果。

@@ -26,11 +26,22 @@ def data_file(name):
     path = DATA / name
     if path.is_file():
         return path
-    for suffix in (".xz", ".gz"):
-        packed = DATA / (name + suffix)
-        if packed.is_file():
-            return packed
+    stems = [name[:-4]] if name.endswith('.csv') else [name]
+    for suffix in (".parquet", ".pkl.xz", ".xz", ".gz"):
+        for stem in stems:
+            packed = DATA / (stem + suffix)
+            if packed.is_file():
+                return packed
     return path
+
+
+def read_table(path, **kwargs):
+    """Read a normal CSV or the lossless pandas pickle used by small EVO packages."""
+    if str(path).endswith('.parquet'):
+        return pd.read_parquet(path)
+    if str(path).endswith('.pkl.xz'):
+        return pd.read_pickle(path, compression='xz')
+    return pd.read_csv(path, **kwargs)
 
 
 def sha(path):
@@ -73,12 +84,18 @@ def recorded_cli(cmd, directory, metadata):
 
 def load_cache():
     factors = json.loads((DATA / "upstream_summary.json").read_text(encoding="utf-8"))["factors"]["selected_names"]
-    weekly = pd.read_csv(data_file("weekly_slim.csv"), dtype={"date": str, "symbol": str,
+    weekly = read_table(data_file("weekly_slim.csv"), dtype={"date": str, "symbol": str,
         "in_universe": "boolean", "entry_tradable": "boolean"}, low_memory=False)
-    raw = pd.read_csv(data_file("panel_for_platform.csv"), dtype={"date": str, "symbol": str})
+    raw = read_table(data_file("panel_for_platform.csv"), dtype={"date": str, "symbol": str})
     assert not weekly.duplicated(["date", "symbol"]).any()
     assert not raw.duplicated(["date", "symbol"]).any()
-    raw = raw.drop(columns="fwd_ret").merge(weekly, on=["date", "symbol"], validate="one_to_one")
+    # The complete input keeps fwd_ret in both files.  The EVO under-50MB
+    # package may omit the duplicate weekly copy because the panel already
+    # carries the same frozen fwd_ret column.
+    if "fwd_ret" in weekly.columns:
+        raw = raw.drop(columns="fwd_ret").merge(weekly, on=["date", "symbol"], validate="one_to_one")
+    else:
+        raw = raw.merge(weekly, on=["date", "symbol"], validate="one_to_one")
     cache = {}
     for date, group in raw.groupby("date", sort=True):
         x = group[factors].to_numpy(dtype=float)

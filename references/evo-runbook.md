@@ -20,6 +20,8 @@ https://github.com/quantskills/skill-strategy-lifecycle
 4. 入口会先检查 `project/frozen_inputs.json`，然后运行 `run_all.py`。流程包括单元测试、状态机重放、收益/机会成本核算、统计和扩展验证、项目侧验收以及中文 HTML 报告生成。
 5. 输入缺失、散列不一致、日期重复或未来信息检查失败时，任务必须失败；不能把本地历史结果复制到 EVO 输出目录。
 
+上传 50 MB 以内的 Parquet 版本时，保持 `project/frozen_q8/data/` 下的两个文件名不变：`panel_for_platform.parquet`、`weekly_slim.parquet`。运行环境需要安装 `project/requirements.txt` 中的 `pyarrow`，入口会自动读取 Parquet 并按包内冻结指纹校验。
+
 ## EVO 回执清单
 
 平台任务完成后，应把以下信息作为同一份运行证据保存：

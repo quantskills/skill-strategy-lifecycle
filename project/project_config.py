@@ -38,17 +38,29 @@ def resolve_input(name: str) -> Path:
     plain = Q8 / name
     if plain.is_file():
         return plain
-    for suffix in ('.xz', '.gz'):
-        packed = Q8 / (name + suffix)
-        if packed.is_file():
-            return packed
+    packed_stems = [name]
+    if name.endswith('.csv'):
+        packed_stems.append(name[:-4])
+    for suffix in ('.parquet', '.pkl.xz', '.xz', '.gz'):
+        for stem in packed_stems:
+            packed = Q8 / (stem + suffix)
+            if packed.is_file():
+                return packed
     return plain
 
 
 def input_sha256(path: Path) -> str:
     """Hash logical file bytes so compressed delivery equals the frozen CSV hash."""
-    if path.suffix not in {'.xz', '.gz'}:
+    if path.suffix not in {'.xz', '.gz'} and not path.name.endswith(('.pkl.xz', '.parquet')):
         return sha256(path)
+    if path.name.endswith('.parquet'):
+        return sha256(path)
+    if path.name.endswith('.pkl.xz'):
+        with lzma.open(path, 'rb') as stream:
+            digest = hashlib.sha256()
+            for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+                digest.update(chunk)
+            return digest.hexdigest()
     opener = lzma.open if path.suffix == '.xz' else gzip.open
     digest = hashlib.sha256()
     with opener(path, 'rb') as stream:
