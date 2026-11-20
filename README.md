@@ -139,7 +139,7 @@ EVO 使用仓库根目录入口，不需要把压缩包拆成很多文件逐个�
 
 ## 原 Q8 A 组基线对账
 
-随包附带的 `references/q8-a-baseline/weekly_labels_date_symbol_fwd_ret.csv.gz` 只含 `date`、`symbol` 和 `fwd_ret`。原 Q8 引擎按 `date,symbol` 与面板一对一合并，并以 `weekly_slim.fwd_ret` 作为实际收益标签。缺失 `fwd_ret` 按 0.0 计入模拟，未成熟的尾部日期排除。输入和导出文件的 SHA256、缺失行数和标签规则记录在 `reconciliation_manifest.json`。
+随包附带的 `references/q8-a-baseline/weekly_labels_date_symbol_fwd_ret.csv.gz` 只含 `date`、`symbol` 和 `fwd_ret`。原 Q8 引擎按 `date,symbol` 与面板一对一合并，并以 `weekly_slim.fwd_ret` 作为实际收益标签。先按标签成熟日历排除未来标签未成熟的最后 5 个周度观察，再截取四相位均衡的 88 个日期。评估窗内部的缺失标签按 0.0 收益计入。源和附件指纹及完整规则见 `reconciliation_manifest.json`，逐项要求和验收证据见 `requirement_acceptance.md`。
 
 88 个日期上，Q8 A 组与 E6 持续启用完全对齐。多头净收益均为 23.6481115946%，对冲均为 -9.7869522706%。逐日最大绝对差低于 `1.4e-15`，四个相位的终值最大差低于 `4.5e-12` 个基点。逐日明细见 `daily_reconciliation_88_dates.csv`，相位对账见 `phase_reconciliation.csv`，说明见 `reconciliation_report.md`。
 

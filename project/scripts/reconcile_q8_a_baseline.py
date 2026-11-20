@@ -115,7 +115,15 @@ def main() -> None:
     if labels.duplicated(["date", "symbol"]).any():
         raise AssertionError("weekly_slim 的 date、symbol 不唯一")
     labels.to_csv(args.output_dir / "weekly_labels_date_symbol_fwd_ret.csv.gz", index=False,
-                  compression={"method": "gzip", "compresslevel": 9}, float_format="%.17g")
+                  compression={"method": "gzip", "compresslevel": 9, "mtime": 0}, float_format="%.17g")
+    label_copy = pd.read_csv(args.output_dir / "weekly_labels_date_symbol_fwd_ret.csv.gz",
+                             dtype={"date": str, "symbol": str}, float_precision="round_trip")
+    source_values = labels["fwd_ret"].to_numpy(dtype=float)
+    copied_values = label_copy["fwd_ret"].to_numpy(dtype=float)
+    if not labels[["date", "symbol"]].equals(label_copy[["date", "symbol"]]):
+        raise AssertionError("标签附件序列化后 date,symbol 与 weekly_slim 源顺序不一致")
+    if not np.array_equal(source_values, copied_values, equal_nan=True):
+        raise AssertionError("标签附件序列化后 fwd_ret 与 weekly_slim 不完全一致")
     daily = pd.concat(daily_frames, ignore_index=True)
     daily.to_csv(args.output_dir / "daily_reconciliation_88_dates.csv", index=False, float_format="%.17g")
     phases = pd.DataFrame(phase_rows)
@@ -135,7 +143,7 @@ def main() -> None:
         "weekly_slim_rows": int(len(weekly)),
         "label_rows": int(len(labels)),
         "label_missing_rows": int(labels["fwd_ret"].isna().sum()),
-        "missing_return_rule": "NaN fwd_ret 在模拟收益向量中按 0.0 计入；评估尾部在标签未成熟时排除。",
+        "missing_return_rule": "先按标签成熟规则排除未来标签未成熟的最后5个周度观察，再从可评估日期中截取四相位均衡的88日；这8个尾部日期中5个因未成熟标签排除，3个因相位均衡排除。评估窗内部NaN fwd_ret在模拟收益向量中按0.0计入。",
         "q8_loader_rule": "panel_for_platform 与 weekly_slim 按 date,symbol 一对一合并，实际模拟收益采用 weekly_slim.fwd_ret。",
         "panel_fwd_ret_rule": "panel_for_platform.fwd_ret 不作为基线标签，以 weekly_slim.fwd_ret 覆盖。",
         "q8_a_metrics": [{"expression": row["expression"], "total": row["total"],
@@ -155,11 +163,11 @@ def main() -> None:
         "",
         "## 标签与缺失值",
         "",
-        f"原始 weekly_slim 共 {len(weekly):,} 行，其中 fwd_ret 缺失 {int(labels['fwd_ret'].isna().sum()):,} 行。附件仅保留 date、symbol、fwd_ret 三列。原 Q8 引擎按 date、symbol 一对一合并后，以 weekly_slim.fwd_ret 覆盖面板同名字段。模拟将缺失收益填为 0.0，并在标签尚未成熟时排除评估尾部。",
+        f"原始 weekly_slim 共 {len(weekly):,} 行，其中 fwd_ret 缺失 {int(labels['fwd_ret'].isna().sum()):,} 行。附件仅保留 date、symbol、fwd_ret 三列。原 Q8 引擎按 date、symbol 一对一合并后，以 weekly_slim.fwd_ret 覆盖面板同名字段。先按标签成熟日历排除未来标签未成熟的最后5个周度观察，再截取四相位均衡的88个日期。评估窗内部缺失标签按0.0收益计入。",
         "",
         "## 88 日期逐日对账",
         "",
-        "| 表达 | 日期数 | Q8 A 组净收益 | E6 持续启用净收益 | 最大单日绝对差 | E6 生命周期净收益 | 生命周期相对基线差异 |",
+        "| 表达 | 日期数 | Q8 A 组净收益 | E6 持续启用净收益 | 最大单日净收益差 | E6 生命周期净收益 | 生命周期相对基线差异 |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for expression in ("long", "hedge"):
@@ -167,8 +175,8 @@ def main() -> None:
         q8_total = next(row["total"] for row in metrics if row["expression"] == expression and row["arm"] == "A")
         e6_total = float(np.mean([phase["e6_always_on_total"] for phase in phase_rows if phase["expression"] == expression]))
         lifecycle_total = float(np.mean([phase["e6_lifecycle_v1_total"] for phase in phase_rows if phase["expression"] == expression]))
-        daily_max = max(float(subset[f"{column}_delta"].abs().max()) for column in max_abs)
-        report.append(f"| {expression} | 88 | {q8_total:+.10%} | {e6_total:+.10%} | {daily_max:.3g} | {lifecycle_total:+.10%} | {(lifecycle_total-q8_total)*100:+.4f} |")
+        daily_net_max = float(subset["net_delta"].abs().max())
+        report.append(f"| {expression} | 88 | {q8_total:+.10%} | {e6_total:+.10%} | {daily_net_max:.3g} | {lifecycle_total:+.10%} | {(lifecycle_total-q8_total)*100:+.4f} |")
     report += ["", "Q8 A 组与 E6 持续启用的 88 日期逐笔交易结果仅有浮点舍入差异。E6 生命周期规则的净收益差来自暴露状态变化，不是标签列或冻结基线错位。", "", "## 相位收益", "", "| 表达 | 相位 | 周期数 | Q8 A 组终值 | E6 持续启用终值 | 持续启用差异（基点） | E6 生命周期终值 | 生命周期差异（百分点） |", "|---|---:|---:|---:|---:|---:|---:|---:|"]
     for row in phase_rows:
         report.append(f"| {row['expression']} | {row['phase']} | {row['dates']} | {row['q8_a_total']:+.10%} | {row['e6_always_on_total']:+.10%} | {row['delta_basis_points']:+.6g} | {row['e6_lifecycle_v1_total']:+.10%} | {row['lifecycle_delta_vs_q8_percentage_points']:+.4f} |")

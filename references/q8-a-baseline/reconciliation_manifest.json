@@ -12,7 +12,7 @@
   "weekly_slim_rows": 397378,
   "label_rows": 397378,
   "label_missing_rows": 12155,
-  "missing_return_rule": "NaN fwd_ret 在模拟收益向量中按 0.0 计入；评估尾部在标签未成熟时排除。",
+  "missing_return_rule": "先按标签成熟规则排除未来标签未成熟的最后5个周度观察，再从可评估日期中截取四相位均衡的88日；这8个尾部日期中5个因未成熟标签排除，3个因相位均衡排除。评估窗内部NaN fwd_ret在模拟收益向量中按0.0计入。",
   "q8_loader_rule": "panel_for_platform 与 weekly_slim 按 date,symbol 一对一合并，实际模拟收益采用 weekly_slim.fwd_ret。",
   "panel_fwd_ret_rule": "panel_for_platform.fwd_ret 不作为基线标签，以 weekly_slim.fwd_ret 覆盖。",
   "q8_a_metrics": [
@@ -45,10 +45,10 @@
     "gross": 9.80118763926896e-17,
     "trade_cost": 9.952975943416931e-17,
     "borrow_cost": 3.838075690598686e-17,
-    "net": 9.8879238130678e-17,
-    "turnover": 1.1102230246251565e-15
+    "net": 9.71445146547012e-17,
+    "turnover": 1.3322676295501878e-15
   },
-  "max_phase_abs_difference_e6_vs_q8_basis_points": 5.551115123125783e-12,
+  "max_phase_abs_difference_e6_vs_q8_basis_points": 4.440892098500626e-12,
   "source_sha256": {
     "data/weekly_slim.csv": "3f5802f18b4577e522111bc72af6c97c28d956bb8219ad64ee85d93a14067a28",
     "data/panel_for_platform.csv": "c188ac197e3257088ccede5ba46a75cd3c684d214a14b98ad89f3f4b02684837",
@@ -59,12 +59,13 @@
     "scripts/engine_v2.py": "4df2713561371a6f2c9f61fe5f4512d6f2852274d770f203eb40efc23cac06a4",
     "E6 historical trades.csv": "e4334c95ab90a5b69c2af0be02079635559686df6eb32b516eb3f18fb0b7c8f2"
   },
-  "reconciliation_script_sha256": "620eafc2fe38fed3b152faed9ce08cc83829f5220bc8de764fb9ec3dd247c862",
+  "reconciliation_script_sha256": "e6cb695b692ed4d94a436058c366a1086ca33c1967ed2626ffc99a5be220b8e2",
   "e6_strategy_copy_sha256": "7af4dc49c13a78e6f55e8c9ba405518ab9c4dd59775ccac318f1523f7a0bc11c",
   "output_sha256": {
-    "daily_reconciliation_88_dates.csv": "b4552112934a0ebbee67af74a9f3ff28ced9f622f978c44fc26805f574e5ad02",
-    "phase_reconciliation.csv": "c36ac1a70bf75ec57b59a070fddb490f85d06b2f28eb85b0fa7a7dd5aa7b8928",
-    "reconciliation_report.md": "fa806dc1868583cbb595278c13bbdaa523bf6dd0622469e8efb1c21749110c64",
-    "weekly_labels_date_symbol_fwd_ret.csv.gz": "d0d8da228864fc0c57a52f778d2c92d45840ac3d446f828e9f54de312473e5ab"
+    "daily_reconciliation_88_dates.csv": "73b9c04b893996c040f065f20d33515433bdf05c42e56784342a6bd6022cc266",
+    "phase_reconciliation.csv": "fea18a8f3184ab0665041d6a598030332820f57b8e913f08f39035d64faeba95",
+    "reconciliation_report.md": "ebe05bf9e213dd85db1f80cd4aabb175f46b7566ae6f9de4a94b7bb837eb2915",
+    "requirement_acceptance.md": "903996a5c4944660bb6bc1d8bfffaffa7371e26033fb297e5b6ea741e6188528",
+    "weekly_labels_date_symbol_fwd_ret.csv.gz": "260629615ba7aa0d9caa95e2ec4c5b78178b684c63a510d95ac48f17790577fa"
   }
 }

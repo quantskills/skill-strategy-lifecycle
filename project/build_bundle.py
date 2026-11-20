@@ -54,7 +54,8 @@ def build(destination: Path, include_results: bool = False):
         "`PANDADATA_PASSWORD`、`PANDADATA_BASE_URL`。按需设置 `PANDADATA_START_DATE`、"
         "`PANDADATA_END_DATE`、`PANDADATA_UNIVERSE` 和 `PANDADATA_FACTORS`。\n\n"
         "包内仅附有历史 Q8 A 组的 `date,symbol,fwd_ret` 标签，用于固定基线口径。"
-        "标签说明、缺失规则、源文件指纹和 88 日期收益对账见 `references/q8-a-baseline/`。"
+        "逐项交付要求与验收状态见 `references/q8-a-baseline/requirement_acceptance.md`，"
+        "标签规则、源文件指纹和 88 日期收益对账见 `references/q8-a-baseline/`。"
         "标签不是行情表或因子面板，也不是本次 Pandadata 运行结果。\n\n"
         "运行产物写入 `results/`，输入和输出回执写入 `runs/evo/`。\n",
         encoding="utf-8",
