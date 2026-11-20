@@ -1,6 +1,6 @@
 # Pandadata 运行时输入契约
 
-E6 的交付包不携带行情、因子、冻结 Q8 结果或压缩数据。EVO 进入 `run_e6.py` 后，默认执行以下顺序：
+E6 的交付包不携带行情表、因子面板或完整 Q8 结果。为核对历史 A 组基线，包内仅附带 `references/q8-a-baseline/weekly_labels_date_symbol_fwd_ret.csv.gz`，其字段限于 `date`、`symbol`、`fwd_ret`。EVO 进入 `run_e6.py` 后，默认执行以下顺序：
 
 1. 从环境变量读取 Pandadata 连接信息并完成认证；
 2. 按 `PANDADATA_START_DATE`、`PANDADATA_END_DATE` 和 `PANDADATA_UNIVERSE` 获取股票日线/因子；
@@ -39,7 +39,7 @@ E6_DATA_MODE=pandadata
 
 ## 运行产物
 
-所有取数结果只写入 `project/runtime_data/q8/`，该目录被 `.gitignore` 排除。运行清单 `runtime_manifest.json` 记录 Pandadata SDK、接口、日期范围、因子名、行数与输入哈希；`data_in_package` 必须为 `false`。EVO 输出中的输入回执和结果回执只记录元数据和哈希，不保存行情明细。
+所有 Pandadata 运行时取数结果只写入 `project/runtime_data/q8/`，该目录被 `.gitignore` 排除。运行清单 `runtime_manifest.json` 记录 Pandadata SDK、接口、日期范围、因子名、行数与输入哈希；该字段只描述运行时生成的数据，不包括历史 Q8 标签附件。EVO 输出中的输入回执和结果回执只记录元数据和哈希，不保存行情明细。
 
 ## 可比性边界
 

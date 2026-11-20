@@ -1,0 +1,70 @@
+{
+  "status": "reconciled",
+  "evaluation_dates": 88,
+  "date_start": "20250103",
+  "date_end": "20260911",
+  "phase_count": 4,
+  "cycles_per_phase": 22,
+  "expressions": [
+    "long",
+    "hedge"
+  ],
+  "weekly_slim_rows": 397378,
+  "label_rows": 397378,
+  "label_missing_rows": 12155,
+  "missing_return_rule": "NaN fwd_ret 在模拟收益向量中按 0.0 计入；评估尾部在标签未成熟时排除。",
+  "q8_loader_rule": "panel_for_platform 与 weekly_slim 按 date,symbol 一对一合并，实际模拟收益采用 weekly_slim.fwd_ret。",
+  "panel_fwd_ret_rule": "panel_for_platform.fwd_ret 不作为基线标签，以 weekly_slim.fwd_ret 覆盖。",
+  "q8_a_metrics": [
+    {
+      "expression": "long",
+      "total": 0.2364811159460511,
+      "phase_totals": [
+        0.3713136969336277,
+        0.2709534526948496,
+        0.2033726166900207,
+        0.10028469746570634
+      ],
+      "missing_long": 93,
+      "missing_pool": 1553
+    },
+    {
+      "expression": "hedge",
+      "total": -0.09786952270560478,
+      "phase_totals": [
+        -0.04121897075103553,
+        -0.1093449647523167,
+        -0.08322983506378889,
+        -0.157684320255278
+      ],
+      "missing_long": 93,
+      "missing_pool": 1553
+    }
+  ],
+  "max_daily_abs_difference_e6_vs_q8": {
+    "gross": 9.80118763926896e-17,
+    "trade_cost": 9.952975943416931e-17,
+    "borrow_cost": 3.838075690598686e-17,
+    "net": 9.8879238130678e-17,
+    "turnover": 1.1102230246251565e-15
+  },
+  "max_phase_abs_difference_e6_vs_q8_basis_points": 5.551115123125783e-12,
+  "source_sha256": {
+    "data/weekly_slim.csv": "3f5802f18b4577e522111bc72af6c97c28d956bb8219ad64ee85d93a14067a28",
+    "data/panel_for_platform.csv": "c188ac197e3257088ccede5ba46a75cd3c684d214a14b98ad89f3f4b02684837",
+    "data/upstream_summary.json": "1dd6e499c547cdbcf490b5e30f4be670fedb89d57d3acb28e0e33c161cdb3797",
+    "config/audit_v2.json": "d8365c995fee4998f707e73b71530bf950ed892f1622003e9389ac17113adf17",
+    "results/v2/metrics.json": "f9e339ef4f6b220b77a430d065fe55fb24ded685555df8ccde8788175e39b9c3",
+    "results/v2/backtest_audit.json": "4eea71b123d1b32d22b79663a994b5cb9a53893f36c344d448e2f637f9313ea8",
+    "scripts/engine_v2.py": "4df2713561371a6f2c9f61fe5f4512d6f2852274d770f203eb40efc23cac06a4",
+    "E6 historical trades.csv": "e4334c95ab90a5b69c2af0be02079635559686df6eb32b516eb3f18fb0b7c8f2"
+  },
+  "reconciliation_script_sha256": "620eafc2fe38fed3b152faed9ce08cc83829f5220bc8de764fb9ec3dd247c862",
+  "e6_strategy_copy_sha256": "7af4dc49c13a78e6f55e8c9ba405518ab9c4dd59775ccac318f1523f7a0bc11c",
+  "output_sha256": {
+    "daily_reconciliation_88_dates.csv": "b4552112934a0ebbee67af74a9f3ff28ced9f622f978c44fc26805f574e5ad02",
+    "phase_reconciliation.csv": "c36ac1a70bf75ec57b59a070fddb490f85d06b2f28eb85b0fa7a7dd5aa7b8928",
+    "reconciliation_report.md": "fa806dc1868583cbb595278c13bbdaa523bf6dd0622469e8efb1c21749110c64",
+    "weekly_labels_date_symbol_fwd_ret.csv.gz": "d0d8da228864fc0c57a52f778d2c92d45840ac3d446f828e9f54de312473e5ab"
+  }
+}

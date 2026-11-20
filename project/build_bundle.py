@@ -1,4 +1,4 @@
-"""生成不携带行情、因子、结果数据的 Pandadata 运行包。"""
+"""生成 Pandadata 运行包，并附带最小 Q8 A 组历史标签与对账证据。"""
 from __future__ import annotations
 
 import argparse
@@ -47,6 +47,18 @@ def build(destination: Path, include_results: bool = False):
         "raise SystemExit(subprocess.call([sys.executable, str(ROOT / 'evo_entry.py')], cwd=ROOT))\n",
         encoding="utf-8",
     )
+    (destination / "README.md").write_text(
+        "# E6 策略生命周期研究\n\n"
+        "本包默认在 EVO 运行时从 Pandadata 获取新研究输入。根目录入口为 `python run_e6.py`。\n\n"
+        "运行前在 EVO 数据连接中授权 Pandadata，或提供 `PANDADATA_USERNAME`、"
+        "`PANDADATA_PASSWORD`、`PANDADATA_BASE_URL`。按需设置 `PANDADATA_START_DATE`、"
+        "`PANDADATA_END_DATE`、`PANDADATA_UNIVERSE` 和 `PANDADATA_FACTORS`。\n\n"
+        "包内仅附有历史 Q8 A 组的 `date,symbol,fwd_ret` 标签，用于固定基线口径。"
+        "标签说明、缺失规则、源文件指纹和 88 日期收益对账见 `references/q8-a-baseline/`。"
+        "标签不是行情表或因子面板，也不是本次 Pandadata 运行结果。\n\n"
+        "运行产物写入 `results/`，输入和输出回执写入 `runs/evo/`。\n",
+        encoding="utf-8",
+    )
     references = ROOT.parent / "references"
     if references.is_dir():
         _copy_tree(references, destination / "references")
@@ -57,14 +69,17 @@ def build(destination: Path, include_results: bool = False):
 
     manifest = {str(p.relative_to(destination)).replace("\\", "/"): sha256(p)
                 for p in destination.rglob("*") if p.is_file()}
-    delivery = {"package_version": "pandadata-runtime-v7", "data_in_package": False,
+    delivery = {"package_version": "pandadata-runtime-v8-q8a-reconciliation", "data_in_package": True,
+                "included_data": ["references/q8-a-baseline/weekly_labels_date_symbol_fwd_ret.csv.gz"],
+                "market_data_in_package": False, "factor_panel_in_package": False,
                 "runtime_data_source": "Pandadata", "entry": "run_e6.py 或 project/evo_entry.py",
                 "credentials": ["PANDADATA_USERNAME", "PANDADATA_PASSWORD", "PANDADATA_BASE_URL"],
                 "runtime_environment": ["E6_DATA_MODE=pandadata", "PANDADATA_START_DATE", "PANDADATA_END_DATE",
                                          "PANDADATA_UNIVERSE", "PANDADATA_FACTORS"],
                 "excluded_paths": sorted(DATA_NAMES), "files": manifest}
     (destination / "delivery_manifest.json").write_text(json.dumps(delivery, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"destination": str(destination), "files": len(manifest), "data_in_package": False,
+    print(json.dumps({"destination": str(destination), "files": len(manifest), "data_in_package": True,
+                      "included_data": delivery["included_data"],
                       "runtime_source": "Pandadata"}, ensure_ascii=False))
 
 

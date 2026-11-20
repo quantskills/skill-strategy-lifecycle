@@ -120,7 +120,7 @@ python evo_entry.py
 
 完整自包含包也提供根目录入口：`python run_e6.py`。该入口只转发到同一套 `project/evo_entry.py` 流程，适合 EVO 将包根目录作为工作目录的运行方式。
 
-最新交付包不携带行情、因子、冻结 Q8 结果或 Parquet/CSV 数据，压缩包只包含代码、配置、三个技能、输入契约和报告模板。EVO 运行时由 `project/pandadata_runtime.py` 认证 Pandadata，获取日线/因子并生成临时周频面板；运行目录 `project/runtime_data/` 被排除在 Git 和交付清单之外。
+最新交付包不携带行情表、因子面板或完整 Q8 结果，仅增加一份原 Q8 A 组 `weekly_slim` 的 `date,symbol,fwd_ret` 三列标签附件及 88 日期对账表。附件用于锁定历史基线，EVO 的新研究输入仍由 `project/pandadata_runtime.py` 运行时从 Pandadata 获取，生成文件留在临时运行目录。
 
 它依次执行 Pandadata 取数、输入检查、测试、研究主流程、行情与策略诊断、扩展验证、独立验收和中文 HTML 生成。`runtime_manifest.json` 记录数据源、接口、日期范围、因子、行数和哈希；不保存到仓库，也不把旧冻结结果冒充成新的 Pandadata 结果。
 
@@ -135,7 +135,13 @@ EVO 使用仓库根目录入口，不需要把压缩包拆成很多文件逐个�
 5. 入口先认证并取数，再生成状态账本、机会成本、统计检验和中文报告。认证失败、数据为空、字段不足或历史长度不足时必须失败，不能回退到本地旧数据；
 6. 运行结束核对 `project/runs/evo/input.json`、`project/runs/evo/output.json`、`project/results/` 和 `project/runtime_data/q8/runtime_manifest.json`。平台回执应保存运行编号、提交号、入口命令、输入元数据、输出清单和哈希。
 
-压缩包中的 `delivery_manifest.json` 明确写有 `data_in_package: false` 和 `runtime_data_source: Pandadata`。既有 `rae598d5dc1e542ad86ba7dfc16ee14bf` 是历史冻结输入运行证据，不能当作本次 Pandadata 运行结果；新的 Pandadata 结果必须以 EVO 真实入口回执为准。
+压缩包中的 `delivery_manifest.json` 如实标明只包含上述历史标签附件，且不包含行情表和因子面板。既有 `rae598d5dc1e542ad86ba7dfc16ee14bf` 是历史冻结输入运行证据，不能当作本次 Pandadata 运行结果；新的 Pandadata 结果必须以 EVO 真实入口回执为准。
+
+## 原 Q8 A 组基线对账
+
+随包附带的 `references/q8-a-baseline/weekly_labels_date_symbol_fwd_ret.csv.gz` 只含 `date`、`symbol` 和 `fwd_ret`。原 Q8 引擎按 `date,symbol` 与面板一对一合并，并以 `weekly_slim.fwd_ret` 作为实际收益标签。缺失 `fwd_ret` 按 0.0 计入模拟，未成熟的尾部日期排除。输入和导出文件的 SHA256、缺失行数和标签规则记录在 `reconciliation_manifest.json`。
+
+88 个日期上，Q8 A 组与 E6 持续启用完全对齐。多头净收益均为 23.6481115946%，对冲均为 -9.7869522706%。逐日最大绝对差低于 `1.4e-15`，四个相位的终值最大差低于 `4.5e-12` 个基点。逐日明细见 `daily_reconciliation_88_dates.csv`，相位对账见 `phase_reconciliation.csv`，说明见 `reconciliation_report.md`。
 
 ## EVO 成功运行证据
 
