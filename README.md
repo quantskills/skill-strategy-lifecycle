@@ -1,6 +1,8 @@
 # 策略生命周期控制：降权、退役与再激活
 
-简体中文 | [QuantSkills 私有仓库](https://github.com/quantskills/skill-strategy-lifecycle)
+QuantSkills 社区发布维护者：[abgyjaguo](https://github.com/abgyjaguo)。
+
+简体中文 | [English](README.en.md)
 
 > QuantSkills `skill-*` 项目：运行时从 Pandadata 获取策略输入，重放策略状态机，比较持续启用、简单阈值、降权、冷却、退役和再激活规则的样本外净收益、机会成本与状态账本。
 
@@ -128,7 +130,7 @@ python evo_entry.py
 
 EVO 使用仓库根目录入口，不需要把压缩包拆成很多文件逐个上传：
 
-1. 导入私有仓库并固定提交号；
+1. 导入本仓库并固定提交号；
 2. 在 EVO 数据连接中授权 Pandadata，或设置 `PANDADATA_USERNAME`、`PANDADATA_PASSWORD`、`PANDADATA_BASE_URL`；
 3. 确认 `E6_DATA_MODE=pandadata`（默认值），并按需要设置 `PANDADATA_START_DATE`、`PANDADATA_END_DATE`、`PANDADATA_UNIVERSE` 和 `PANDADATA_FACTORS`；
 4. 在仓库根目录执行 `python run_e6.py`。若工作目录已经是 `project/`，执行 `python evo_entry.py`，两个入口调用同一套流程；
